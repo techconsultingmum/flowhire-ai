@@ -19,6 +19,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -37,12 +39,28 @@ interface SidebarProps {
 export function Sidebar({ onNavigate }: SidebarProps) {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const { profile, role, signOut } = useAuth();
 
   const handleNavClick = () => {
     if (onNavigate) {
       onNavigate();
     }
   };
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast.success("Signed out successfully");
+  };
+
+  const displayName = profile?.first_name && profile?.last_name
+    ? `${profile.first_name} ${profile.last_name}`
+    : profile?.email?.split("@")[0] ?? "User";
+
+  const initials = profile?.first_name && profile?.last_name
+    ? `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase()
+    : displayName.substring(0, 2).toUpperCase();
+
+  const roleLabel = role === "admin" ? "Admin" : role === "hiring_manager" ? "Hiring Manager" : "Recruiter";
 
   return (
     <aside
@@ -133,31 +151,30 @@ export function Sidebar({ onNavigate }: SidebarProps) {
           </div>
           <div className={cn("flex items-center gap-3", collapsed && "justify-center")}>
             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center flex-shrink-0">
-              <span className="text-primary-foreground font-medium">JD</span>
+              <span className="text-primary-foreground font-medium">{initials}</span>
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-sidebar-foreground truncate">
-                  John Doe
+                  {displayName}
                 </p>
                 <p className="text-xs text-sidebar-foreground/50 truncate">
-                  Admin
+                  {roleLabel}
                 </p>
               </div>
             )}
             {!collapsed && (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Link to="/">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent"
-                      aria-label="Sign out"
-                    >
-                      <LogOut className="w-4 h-4" />
-                    </Button>
-                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                    aria-label="Sign out"
+                    onClick={handleSignOut}
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </Button>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Sign out</p>
