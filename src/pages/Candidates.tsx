@@ -10,9 +10,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Search, Filter, Mail, Phone, FileText, Star } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Plus, Search, Filter, Mail, Phone, FileText, Star, Users, ChevronLeft, ChevronRight } from "lucide-react";
+import { useSearch } from "@/hooks/use-search";
+import { usePagination } from "@/hooks/use-pagination";
+import { useState, useMemo } from "react";
 
-const candidates = [
+const allCandidates = [
   {
     id: 1,
     name: "Sarah Chen",
@@ -85,18 +94,75 @@ const candidates = [
     skills: ["AWS", "Kubernetes", "Terraform"],
     appliedDate: "2024-01-10",
   },
+  {
+    id: 7,
+    name: "Amanda Martinez",
+    email: "amanda.m@email.com",
+    phone: "+1 (555) 789-0123",
+    role: "Senior Backend Engineer",
+    stage: "Interview",
+    score: 87,
+    initials: "AM",
+    skills: ["Java", "Spring Boot", "MongoDB"],
+    appliedDate: "2024-01-09",
+  },
+  {
+    id: 8,
+    name: "Robert Taylor",
+    email: "r.taylor@email.com",
+    phone: "+1 (555) 890-1234",
+    role: "Full Stack Developer",
+    stage: "Screening",
+    score: 81,
+    initials: "RT",
+    skills: ["React", "Node.js", "PostgreSQL"],
+    appliedDate: "2024-01-08",
+  },
 ];
 
 const stageColors: Record<string, string> = {
   Applied: "bg-muted text-muted-foreground",
-  Screening: "bg-blue-500/10 text-blue-600",
-  Interview: "bg-purple-500/10 text-purple-600",
+  Screening: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+  Interview: "bg-purple-500/10 text-purple-600 dark:text-purple-400",
   Offer: "bg-warning/10 text-warning",
   Hired: "bg-success/10 text-success",
   Rejected: "bg-destructive/10 text-destructive",
 };
 
 export default function Candidates() {
+  const [stageFilter, setStageFilter] = useState("all");
+  const [jobFilter, setJobFilter] = useState("all");
+
+  const { searchQuery, setSearchQuery, filteredData: searchedCandidates } = useSearch({
+    data: allCandidates,
+    searchKeys: ["name", "email", "role", "skills"],
+  });
+
+  const filteredCandidates = useMemo(() => {
+    return searchedCandidates.filter((candidate) => {
+      if (stageFilter !== "all" && candidate.stage.toLowerCase() !== stageFilter) {
+        return false;
+      }
+      return true;
+    });
+  }, [searchedCandidates, stageFilter]);
+
+  const {
+    currentPage,
+    totalPages,
+    startIndex,
+    endIndex,
+    nextPage,
+    prevPage,
+    canGoNext,
+    canGoPrev,
+  } = usePagination({
+    totalItems: filteredCandidates.length,
+    itemsPerPage: 5,
+  });
+
+  const paginatedCandidates = filteredCandidates.slice(startIndex, endIndex);
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -118,9 +184,14 @@ export default function Candidates() {
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="Search candidates..." className="pl-10" />
+            <Input
+              placeholder="Search candidates by name, email, role, or skills..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-          <Select defaultValue="all">
+          <Select value={stageFilter} onValueChange={setStageFilter}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Stage" />
             </SelectTrigger>
@@ -133,7 +204,7 @@ export default function Candidates() {
               <SelectItem value="hired">Hired</SelectItem>
             </SelectContent>
           </Select>
-          <Select defaultValue="all">
+          <Select value={jobFilter} onValueChange={setJobFilter}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Job" />
             </SelectTrigger>
@@ -151,96 +222,157 @@ export default function Candidates() {
           </Button>
         </div>
 
-        {/* Candidates List */}
-        <div className="bg-card rounded-2xl border border-border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border bg-muted/50">
-                  <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
-                    Candidate
-                  </th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
-                    Role
-                  </th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
-                    Stage
-                  </th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
-                    AI Score
-                  </th>
-                  <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
-                    Skills
-                  </th>
-                  <th className="text-right px-6 py-4 text-sm font-medium text-muted-foreground">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {candidates.map((candidate) => (
-                  <tr
-                    key={candidate.id}
-                    className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="w-10 h-10 bg-gradient-to-br from-primary to-accent">
-                          <AvatarFallback className="bg-transparent text-white text-sm font-medium">
-                            {candidate.initials}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{candidate.name}</p>
-                          <p className="text-sm text-muted-foreground">{candidate.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <p className="font-medium">{candidate.role}</p>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Badge className={stageColors[candidate.stage]}>{candidate.stage}</Badge>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <Star className="w-4 h-4 text-warning fill-warning" />
-                        <span className="font-semibold">{candidate.score}%</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {candidate.skills.slice(0, 2).map((skill) => (
-                          <Badge key={skill} variant="secondary" className="text-xs">
-                            {skill}
-                          </Badge>
-                        ))}
-                        {candidate.skills.length > 2 && (
-                          <Badge variant="secondary" className="text-xs">
-                            +{candidate.skills.length - 2}
-                          </Badge>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Mail className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Phone className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <FileText className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        {/* Results count */}
+        <div className="text-sm text-muted-foreground">
+          Showing {startIndex + 1}-{Math.min(endIndex, filteredCandidates.length)} of {filteredCandidates.length} candidates
         </div>
+
+        {/* Candidates List */}
+        {paginatedCandidates.length > 0 ? (
+          <div className="bg-card rounded-2xl border border-border overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-muted/50">
+                    <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
+                      Candidate
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
+                      Role
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
+                      Stage
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
+                      AI Score
+                    </th>
+                    <th className="text-left px-6 py-4 text-sm font-medium text-muted-foreground">
+                      Skills
+                    </th>
+                    <th className="text-right px-6 py-4 text-sm font-medium text-muted-foreground">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedCandidates.map((candidate) => (
+                    <tr
+                      key={candidate.id}
+                      className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors cursor-pointer"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="w-10 h-10 bg-gradient-to-br from-primary to-accent">
+                            <AvatarFallback className="bg-transparent text-white text-sm font-medium">
+                              {candidate.initials}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{candidate.name}</p>
+                            <p className="text-sm text-muted-foreground">{candidate.email}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <p className="font-medium">{candidate.role}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <Badge className={stageColors[candidate.stage]}>{candidate.stage}</Badge>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <Star className="w-4 h-4 text-warning fill-warning" />
+                          <span className="font-semibold">{candidate.score}%</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex flex-wrap gap-1">
+                          {candidate.skills.slice(0, 2).map((skill) => (
+                            <Badge key={skill} variant="secondary" className="text-xs">
+                              {skill}
+                            </Badge>
+                          ))}
+                          {candidate.skills.length > 2 && (
+                            <Badge variant="secondary" className="text-xs">
+                              +{candidate.skills.length - 2}
+                            </Badge>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Send email">
+                                <Mail className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Send email</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="Call candidate">
+                                <Phone className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Call candidate</TooltipContent>
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8" aria-label="View resume">
+                                <FileText className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>View resume</TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-6 py-4 border-t border-border">
+                <p className="text-sm text-muted-foreground">
+                  Page {currentPage} of {totalPages}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={prevPage}
+                    disabled={!canGoPrev}
+                    className="gap-1"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={nextPage}
+                    disabled={!canGoNext}
+                    className="gap-1"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <EmptyState
+            icon={Users}
+            title="No candidates found"
+            description={searchQuery ? "Try adjusting your search or filters to find what you're looking for." : "Add your first candidate to get started."}
+            actionLabel={searchQuery ? undefined : "Add Candidate"}
+            onAction={searchQuery ? undefined : () => {}}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

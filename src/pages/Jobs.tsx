@@ -9,9 +9,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Briefcase, MapPin, Users, Plus, Search, Filter } from "lucide-react";
+import { useSearch } from "@/hooks/use-search";
+import { useState, useMemo } from "react";
 
-const jobs = [
+const allJobs = [
   {
     id: 1,
     title: "Senior Frontend Developer",
@@ -88,6 +91,26 @@ const statusColors: Record<string, string> = {
 };
 
 export default function Jobs() {
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [departmentFilter, setDepartmentFilter] = useState("all");
+
+  const { searchQuery, setSearchQuery, filteredData: searchedJobs } = useSearch({
+    data: allJobs,
+    searchKeys: ["title", "department", "location"],
+  });
+
+  const filteredJobs = useMemo(() => {
+    return searchedJobs.filter((job) => {
+      if (statusFilter !== "all" && job.status.toLowerCase() !== statusFilter) {
+        return false;
+      }
+      if (departmentFilter !== "all" && job.department.toLowerCase() !== departmentFilter) {
+        return false;
+      }
+      return true;
+    });
+  }, [searchedJobs, statusFilter, departmentFilter]);
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -109,9 +132,14 @@ export default function Jobs() {
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="Search jobs..." className="pl-10" />
+            <Input
+              placeholder="Search jobs by title, department, or location..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-          <Select defaultValue="all">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
@@ -123,7 +151,7 @@ export default function Jobs() {
               <SelectItem value="closed">Closed</SelectItem>
             </SelectContent>
           </Select>
-          <Select defaultValue="all">
+          <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="Department" />
             </SelectTrigger>
@@ -141,39 +169,54 @@ export default function Jobs() {
           </Button>
         </div>
 
-        {/* Jobs Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {jobs.map((job) => (
-            <div
-              key={job.id}
-              className="bg-card rounded-2xl border border-border p-6 hover:border-primary/30 transition-all cursor-pointer hover-lift"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <Badge className={statusColors[job.status]}>{job.status}</Badge>
-                <Badge variant="secondary">{job.type}</Badge>
-              </div>
-              <h3 className="text-lg font-semibold mb-2">{job.title}</h3>
-              <div className="space-y-2 text-sm text-muted-foreground mb-4">
-                <div className="flex items-center gap-2">
-                  <Briefcase className="w-4 h-4" />
-                  <span>{job.department}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  <span>{job.location}</span>
-                </div>
-              </div>
-              <div className="pt-4 border-t border-border flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-sm">
-                  <Users className="w-4 h-4 text-primary" />
-                  <span className="font-medium">{job.applicants}</span>
-                  <span className="text-muted-foreground">applicants</span>
-                </span>
-                <span className="text-sm font-medium text-primary">{job.salary}</span>
-              </div>
-            </div>
-          ))}
+        {/* Results count */}
+        <div className="text-sm text-muted-foreground">
+          Showing {filteredJobs.length} of {allJobs.length} jobs
         </div>
+
+        {/* Jobs Grid */}
+        {filteredJobs.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredJobs.map((job) => (
+              <div
+                key={job.id}
+                className="bg-card rounded-2xl border border-border p-6 hover:border-primary/30 transition-all cursor-pointer hover-lift"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <Badge className={statusColors[job.status]}>{job.status}</Badge>
+                  <Badge variant="secondary">{job.type}</Badge>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{job.title}</h3>
+                <div className="space-y-2 text-sm text-muted-foreground mb-4">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="w-4 h-4" />
+                    <span>{job.department}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    <span>{job.location}</span>
+                  </div>
+                </div>
+                <div className="pt-4 border-t border-border flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-sm">
+                    <Users className="w-4 h-4 text-primary" />
+                    <span className="font-medium">{job.applicants}</span>
+                    <span className="text-muted-foreground">applicants</span>
+                  </span>
+                  <span className="text-sm font-medium text-primary">{job.salary}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            icon={Briefcase}
+            title="No jobs found"
+            description={searchQuery ? "Try adjusting your search or filters to find what you're looking for." : "Create your first job posting to get started."}
+            actionLabel={searchQuery ? undefined : "Create Job"}
+            onAction={searchQuery ? undefined : () => {}}
+          />
+        )}
       </div>
     </DashboardLayout>
   );
