@@ -14,6 +14,7 @@ import Pipeline from "./pages/Pipeline";
 import Analytics from "./pages/Analytics";
 import Integrations from "./pages/Integrations";
 import Settings from "./pages/Settings";
+import Admin from "./pages/Admin";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -83,6 +84,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Settings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute>
+                    <Admin />
                   </ProtectedRoute>
                 }
               />
