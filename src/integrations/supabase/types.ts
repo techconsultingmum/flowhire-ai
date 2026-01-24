@@ -14,6 +14,150 @@ export type Database = {
   }
   public: {
     Tables: {
+      applications: {
+        Row: {
+          applied_at: string
+          candidate_id: string
+          created_at: string
+          id: string
+          job_id: string
+          notes: string | null
+          stage: string
+          stage_updated_at: string
+          updated_at: string
+        }
+        Insert: {
+          applied_at?: string
+          candidate_id: string
+          created_at?: string
+          id?: string
+          job_id: string
+          notes?: string | null
+          stage?: string
+          stage_updated_at?: string
+          updated_at?: string
+        }
+        Update: {
+          applied_at?: string
+          candidate_id?: string
+          created_at?: string
+          id?: string
+          job_id?: string
+          notes?: string | null
+          stage?: string
+          stage_updated_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_candidate_id_fkey"
+            columns: ["candidate_id"]
+            isOneToOne: false
+            referencedRelation: "candidates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      candidates: {
+        Row: {
+          ai_score: number | null
+          created_at: string
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          notes: string | null
+          phone: string | null
+          resume_url: string | null
+          skills: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          ai_score?: number | null
+          created_at?: string
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          notes?: string | null
+          phone?: string | null
+          resume_url?: string | null
+          skills?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          ai_score?: number | null
+          created_at?: string
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          notes?: string | null
+          phone?: string | null
+          resume_url?: string | null
+          skills?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      jobs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          department: string
+          description: string | null
+          id: string
+          location: string
+          posted_date: string
+          requirements: string[] | null
+          salary_max: number | null
+          salary_min: number | null
+          status: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          department: string
+          description?: string | null
+          id?: string
+          location: string
+          posted_date?: string
+          requirements?: string[] | null
+          salary_max?: number | null
+          salary_min?: number | null
+          status?: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          department?: string
+          description?: string | null
+          id?: string
+          location?: string
+          posted_date?: string
+          requirements?: string[] | null
+          salary_max?: number | null
+          salary_min?: number | null
+          status?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

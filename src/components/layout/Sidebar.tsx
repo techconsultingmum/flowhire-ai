@@ -7,6 +7,7 @@ import {
   BarChart3,
   Puzzle,
   Settings,
+  Shield,
   LogOut,
   ChevronLeft,
 } from "lucide-react";
@@ -30,6 +31,7 @@ const navigation = [
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Integrations", href: "/integrations", icon: Puzzle },
   { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Admin", href: "/admin", icon: Shield, adminOnly: true },
 ];
 
 interface SidebarProps {
@@ -103,45 +105,47 @@ export function Sidebar({ onNavigate }: SidebarProps) {
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {navigation.map((item) => {
-            const isActive = location.pathname === item.href;
-            return collapsed ? (
-              <Tooltip key={item.name}>
-                <TooltipTrigger asChild>
-                  <Link
-                    to={item.href}
-                    onClick={handleNavClick}
-                    className={cn(
-                      "flex items-center justify-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                      isActive
-                        ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
-                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                    )}
-                  >
-                    <item.icon className="w-5 h-5 flex-shrink-0" />
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="right">
-                  <p>{item.name}</p>
-                </TooltipContent>
-              </Tooltip>
-            ) : (
-              <Link
-                key={item.name}
-                to={item.href}
-                onClick={handleNavClick}
-                className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
-                  isActive
-                    ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
-                    : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                )}
-              >
-                <item.icon className="w-5 h-5 flex-shrink-0" />
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
+          {navigation
+            .filter((item) => !item.adminOnly || role === "admin")
+            .map((item) => {
+              const isActive = location.pathname === item.href;
+              return collapsed ? (
+                <Tooltip key={item.name}>
+                  <TooltipTrigger asChild>
+                    <Link
+                      to={item.href}
+                      onClick={handleNavClick}
+                      className={cn(
+                        "flex items-center justify-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                        isActive
+                          ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                      )}
+                    >
+                      <item.icon className="w-5 h-5 flex-shrink-0" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>{item.name}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ) : (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={handleNavClick}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
+                    isActive
+                      ? "bg-sidebar-primary text-sidebar-primary-foreground shadow-md"
+                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+                  )}
+                >
+                  <item.icon className="w-5 h-5 flex-shrink-0" />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
         </nav>
 
         {/* Theme Toggle & User Section */}
