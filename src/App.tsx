@@ -10,6 +10,7 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Jobs from "./pages/Jobs";
 import Candidates from "./pages/Candidates";
+import CandidateDetail from "./pages/CandidateDetail";
 import Pipeline from "./pages/Pipeline";
 import Analytics from "./pages/Analytics";
 import Integrations from "./pages/Integrations";
@@ -52,6 +53,14 @@ const App = () => (
                 element={
                   <ProtectedRoute>
                     <Candidates />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/candidates/:id"
+                element={
+                  <ProtectedRoute>
+                    <CandidateDetail />
                   </ProtectedRoute>
                 }
               />

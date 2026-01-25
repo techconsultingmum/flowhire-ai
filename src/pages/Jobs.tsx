@@ -1,7 +1,7 @@
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -10,92 +10,49 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Briefcase, MapPin, Users, Plus, Search, Filter } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { JobFormDialog } from "@/components/jobs/JobFormDialog";
+import { Briefcase, MapPin, Users, Search, Filter } from "lucide-react";
 import { useSearch } from "@/hooks/use-search";
+import { useJobs } from "@/hooks/use-jobs";
+import { useApplications } from "@/hooks/use-applications";
 import { useState, useMemo } from "react";
 
-const allJobs = [
-  {
-    id: 1,
-    title: "Senior Frontend Developer",
-    department: "Engineering",
-    location: "San Francisco, CA",
-    type: "Full-time",
-    applicants: 45,
-    status: "Active",
-    postedDate: "2024-01-10",
-    salary: "$150k - $180k",
-  },
-  {
-    id: 2,
-    title: "Product Manager",
-    department: "Product",
-    location: "Remote",
-    type: "Full-time",
-    applicants: 78,
-    status: "Active",
-    postedDate: "2024-01-12",
-    salary: "$130k - $160k",
-  },
-  {
-    id: 3,
-    title: "UX Designer",
-    department: "Design",
-    location: "New York, NY",
-    type: "Full-time",
-    applicants: 32,
-    status: "Active",
-    postedDate: "2024-01-15",
-    salary: "$100k - $130k",
-  },
-  {
-    id: 4,
-    title: "Backend Engineer",
-    department: "Engineering",
-    location: "Austin, TX",
-    type: "Full-time",
-    applicants: 56,
-    status: "Active",
-    postedDate: "2024-01-08",
-    salary: "$140k - $170k",
-  },
-  {
-    id: 5,
-    title: "Data Analyst",
-    department: "Analytics",
-    location: "Remote",
-    type: "Full-time",
-    applicants: 23,
-    status: "Draft",
-    postedDate: "2024-01-18",
-    salary: "$90k - $120k",
-  },
-  {
-    id: 6,
-    title: "DevOps Engineer",
-    department: "Engineering",
-    location: "Seattle, WA",
-    type: "Full-time",
-    applicants: 41,
-    status: "Paused",
-    postedDate: "2024-01-05",
-    salary: "$160k - $190k",
-  },
-];
-
 const statusColors: Record<string, string> = {
-  Active: "bg-success/10 text-success",
-  Draft: "bg-muted text-muted-foreground",
-  Paused: "bg-warning/10 text-warning",
-  Closed: "bg-destructive/10 text-destructive",
+  active: "bg-success/10 text-success",
+  draft: "bg-muted text-muted-foreground",
+  paused: "bg-warning/10 text-warning",
+  closed: "bg-destructive/10 text-destructive",
+};
+
+const formatSalary = (min: number | null, max: number | null) => {
+  if (!min && !max) return null;
+  const formatNum = (n: number) => {
+    if (n >= 1000) return `$${Math.round(n / 1000)}k`;
+    return `$${n}`;
+  };
+  if (min && max) return `${formatNum(min)} - ${formatNum(max)}`;
+  if (min) return `${formatNum(min)}+`;
+  if (max) return `Up to ${formatNum(max)}`;
+  return null;
 };
 
 export default function Jobs() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
+  const { jobs, isLoading } = useJobs();
+  const { applications } = useApplications();
+
+  // Count applicants per job
+  const jobsWithApplicants = useMemo(() => {
+    return jobs.map((job) => ({
+      ...job,
+      applicantCount: applications.filter((a) => a.job_id === job.id).length,
+    }));
+  }, [jobs, applications]);
 
   const { searchQuery, setSearchQuery, filteredData: searchedJobs } = useSearch({
-    data: allJobs,
+    data: jobsWithApplicants,
     searchKeys: ["title", "department", "location"],
   });
 
@@ -111,6 +68,30 @@ export default function Jobs() {
     });
   }, [searchedJobs, statusFilter, departmentFilter]);
 
+  // Get unique departments
+  const departments = useMemo(() => {
+    const depts = new Set(jobs.map((j) => j.department));
+    return Array.from(depts).sort();
+  }, [jobs]);
+
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-8">
+          <div className="flex justify-between">
+            <Skeleton className="h-10 w-48" />
+            <Skeleton className="h-10 w-32" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-48 w-full" />
+            ))}
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -122,10 +103,7 @@ export default function Jobs() {
               Manage your job postings and track applications.
             </p>
           </div>
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            Create Job
-          </Button>
+          <JobFormDialog />
         </div>
 
         {/* Filters */}
@@ -157,10 +135,11 @@ export default function Jobs() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Departments</SelectItem>
-              <SelectItem value="engineering">Engineering</SelectItem>
-              <SelectItem value="product">Product</SelectItem>
-              <SelectItem value="design">Design</SelectItem>
-              <SelectItem value="analytics">Analytics</SelectItem>
+              {departments.map((dept) => (
+                <SelectItem key={dept} value={dept.toLowerCase()}>
+                  {dept}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <Button variant="outline" className="gap-2">
@@ -171,7 +150,7 @@ export default function Jobs() {
 
         {/* Results count */}
         <div className="text-sm text-muted-foreground">
-          Showing {filteredJobs.length} of {allJobs.length} jobs
+          Showing {filteredJobs.length} of {jobs.length} jobs
         </div>
 
         {/* Jobs Grid */}
@@ -183,7 +162,9 @@ export default function Jobs() {
                 className="bg-card rounded-2xl border border-border p-6 hover:border-primary/30 transition-all cursor-pointer hover-lift"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <Badge className={statusColors[job.status]}>{job.status}</Badge>
+                  <Badge className={statusColors[job.status] || statusColors.draft}>
+                    {job.status}
+                  </Badge>
                   <Badge variant="secondary">{job.type}</Badge>
                 </div>
                 <h3 className="text-lg font-semibold mb-2">{job.title}</h3>
@@ -200,10 +181,14 @@ export default function Jobs() {
                 <div className="pt-4 border-t border-border flex items-center justify-between">
                   <span className="flex items-center gap-1.5 text-sm">
                     <Users className="w-4 h-4 text-primary" />
-                    <span className="font-medium">{job.applicants}</span>
+                    <span className="font-medium">{job.applicantCount}</span>
                     <span className="text-muted-foreground">applicants</span>
                   </span>
-                  <span className="text-sm font-medium text-primary">{job.salary}</span>
+                  {formatSalary(job.salary_min, job.salary_max) && (
+                    <span className="text-sm font-medium text-primary">
+                      {formatSalary(job.salary_min, job.salary_max)}
+                    </span>
+                  )}
                 </div>
               </div>
             ))}
