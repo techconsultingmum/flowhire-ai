@@ -196,9 +196,17 @@ export default function CandidateDetail() {
                             href={candidate.resume_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-primary hover:underline"
+                            className="text-primary hover:underline inline-flex items-center gap-1"
                           >
                             View Resume
+                          </a>
+                          <span className="text-muted-foreground">•</span>
+                          <a
+                            href={candidate.resume_url}
+                            download
+                            className="text-primary hover:underline inline-flex items-center gap-1"
+                          >
+                            Download
                           </a>
                         </div>
                       )}

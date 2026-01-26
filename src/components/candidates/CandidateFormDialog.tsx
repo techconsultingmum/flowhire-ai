@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -22,7 +22,9 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useCandidates, Candidate } from "@/hooks/use-candidates";
-import { Plus, Loader2, Edit } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Plus, Loader2, Edit, Upload, FileText, X } from "lucide-react";
 
 const candidateSchema = z.object({
   first_name: z.string().min(1, "First name is required").max(50, "First name must be less than 50 characters"),
@@ -31,7 +33,6 @@ const candidateSchema = z.object({
   phone: z.string().max(20, "Phone number must be less than 20 characters").optional().or(z.literal("")),
   skills: z.string().optional(),
   notes: z.string().max(1000, "Notes must be less than 1000 characters").optional(),
-  resume_url: z.string().url("Invalid URL").optional().or(z.literal("")),
 });
 
 type CandidateFormValues = z.infer<typeof candidateSchema>;
@@ -43,7 +44,12 @@ interface CandidateFormDialogProps {
 
 export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogProps) {
   const [open, setOpen] = useState(false);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [existingResumeUrl, setExistingResumeUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { createCandidate, updateCandidate } = useCandidates();
+  const { toast } = useToast();
   const isEditing = !!candidate;
 
   const form = useForm<CandidateFormValues>({
@@ -55,7 +61,6 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
       phone: "",
       skills: "",
       notes: "",
-      resume_url: "",
     },
   });
 
@@ -69,8 +74,9 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
         phone: candidate.phone || "",
         skills: candidate.skills?.join(", ") || "",
         notes: candidate.notes || "",
-        resume_url: candidate.resume_url || "",
       });
+      setExistingResumeUrl(candidate.resume_url);
+      setResumeFile(null);
     } else if (open && !candidate) {
       form.reset({
         first_name: "",
@@ -79,45 +85,144 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
         phone: "",
         skills: "",
         notes: "",
-        resume_url: "",
       });
+      setExistingResumeUrl(null);
+      setResumeFile(null);
     }
   }, [open, candidate, form]);
 
-  const onSubmit = async (values: CandidateFormValues) => {
-    const skills = values.skills
-      ? values.skills.split(",").map((s) => s.trim()).filter(Boolean)
-      : null;
-
-    if (isEditing && candidate) {
-      await updateCandidate.mutateAsync({
-        id: candidate.id,
-        first_name: values.first_name,
-        last_name: values.last_name,
-        email: values.email,
-        phone: values.phone || null,
-        skills,
-        notes: values.notes || null,
-        resume_url: values.resume_url || null,
-      });
-    } else {
-      await createCandidate.mutateAsync({
-        first_name: values.first_name,
-        last_name: values.last_name,
-        email: values.email,
-        phone: values.phone || null,
-        skills,
-        notes: values.notes || null,
-        resume_url: values.resume_url || null,
-        ai_score: null,
-      });
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload a PDF or Word document.",
+          variant: "destructive",
+        });
+        return;
+      }
+      // Validate file size (5MB max)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Resume must be less than 5MB.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setResumeFile(file);
+      setExistingResumeUrl(null);
     }
-
-    form.reset();
-    setOpen(false);
   };
 
-  const isPending = createCandidate.isPending || updateCandidate.isPending;
+  const removeResume = () => {
+    setResumeFile(null);
+    setExistingResumeUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const uploadResume = async (file: File, candidateId: string): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${candidateId}/${Date.now()}.${fileExt}`;
+    
+    const { error: uploadError } = await supabase.storage
+      .from('resumes')
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: true
+      });
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('resumes')
+      .getPublicUrl(fileName);
+
+    // Since bucket is private, we need to create a signed URL
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+      .from('resumes')
+      .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year expiry
+
+    if (signedUrlError) {
+      throw signedUrlError;
+    }
+
+    return signedUrlData.signedUrl;
+  };
+
+  const onSubmit = async (values: CandidateFormValues) => {
+    setIsUploading(true);
+    
+    try {
+      const skills = values.skills
+        ? values.skills.split(",").map((s) => s.trim()).filter(Boolean)
+        : null;
+
+      let resumeUrl: string | null = existingResumeUrl;
+
+      if (isEditing && candidate) {
+        // Upload new resume if selected
+        if (resumeFile) {
+          resumeUrl = await uploadResume(resumeFile, candidate.id);
+        }
+
+        await updateCandidate.mutateAsync({
+          id: candidate.id,
+          first_name: values.first_name,
+          last_name: values.last_name,
+          email: values.email,
+          phone: values.phone || null,
+          skills,
+          notes: values.notes || null,
+          resume_url: resumeUrl,
+        });
+      } else {
+        // Create candidate first, then upload resume
+        const newCandidate = await createCandidate.mutateAsync({
+          first_name: values.first_name,
+          last_name: values.last_name,
+          email: values.email,
+          phone: values.phone || null,
+          skills,
+          notes: values.notes || null,
+          resume_url: null,
+          ai_score: null,
+        });
+
+        // Upload resume if provided
+        if (resumeFile && newCandidate?.id) {
+          resumeUrl = await uploadResume(resumeFile, newCandidate.id);
+          await updateCandidate.mutateAsync({
+            id: newCandidate.id,
+            resume_url: resumeUrl,
+          });
+        }
+      }
+
+      form.reset();
+      setResumeFile(null);
+      setExistingResumeUrl(null);
+      setOpen(false);
+    } catch (error) {
+      console.error("Error saving candidate:", error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save candidate",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const isPending = createCandidate.isPending || updateCandidate.isPending || isUploading;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -217,19 +322,48 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="resume_url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Resume URL</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://example.com/resume.pdf" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            {/* Resume Upload */}
+            <div className="space-y-2">
+              <FormLabel>Resume</FormLabel>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              
+              {resumeFile || existingResumeUrl ? (
+                <div className="flex items-center gap-2 p-3 bg-muted rounded-lg border border-border">
+                  <FileText className="w-5 h-5 text-primary shrink-0" />
+                  <span className="text-sm truncate flex-1">
+                    {resumeFile ? resumeFile.name : "Current resume"}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 shrink-0"
+                    onClick={removeResume}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full h-20 border-dashed gap-2"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="w-5 h-5" />
+                  <div className="text-left">
+                    <div className="font-medium">Upload Resume</div>
+                    <div className="text-xs text-muted-foreground">PDF or Word, max 5MB</div>
+                  </div>
+                </Button>
               )}
-            />
+            </div>
 
             <FormField
               control={form.control}
