@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -6,10 +7,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useCandidates } from "@/hooks/use-candidates";
 import { useApplications } from "@/hooks/use-applications";
 import { useJobs } from "@/hooks/use-jobs";
 import { AIScoringButton } from "@/components/candidates/AIScoringButton";
+import { CandidateFormDialog } from "@/components/candidates/CandidateFormDialog";
 import {
   ArrowLeft,
   Mail,
@@ -20,8 +33,8 @@ import {
   Briefcase,
   MapPin,
   Clock,
-  Edit,
   Trash2,
+  Loader2,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -37,14 +50,26 @@ const stageColors: Record<string, string> = {
 export default function CandidateDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { candidates, isLoading: candidatesLoading } = useCandidates();
+  const { candidates, isLoading: candidatesLoading, deleteCandidate } = useCandidates();
   const { applications, isLoading: applicationsLoading } = useApplications();
   const { jobs } = useJobs();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const candidate = candidates.find((c) => c.id === id);
   const candidateApplications = applications.filter((a) => a.candidate_id === id);
 
   const isLoading = candidatesLoading || applicationsLoading;
+
+  const handleDelete = async () => {
+    if (!candidate) return;
+    setIsDeleting(true);
+    try {
+      await deleteCandidate.mutateAsync(candidate.id);
+      navigate("/candidates");
+    } catch (error) {
+      setIsDeleting(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -98,12 +123,34 @@ export default function CandidateDetail() {
           </div>
           <div className="flex items-center gap-2">
             <AIScoringButton candidateId={candidate.id} />
-            <Button variant="outline" size="icon">
-              <Edit className="w-4 h-4" />
-            </Button>
-            <Button variant="outline" size="icon" className="text-destructive">
-              <Trash2 className="w-4 h-4" />
-            </Button>
+            <CandidateFormDialog candidate={candidate} />
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" size="icon" className="text-destructive hover:text-destructive">
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Candidate</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure you want to delete {candidate.first_name} {candidate.last_name}? 
+                    This will also delete all their applications and cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={isDeleting}
+                  >
+                    {isDeleting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
 

@@ -332,13 +332,18 @@ export default function Candidates() {
             )}
           </div>
         ) : (
-          <EmptyState
-            icon={Users}
-            title="No candidates found"
-            description={searchQuery ? "Try adjusting your search or filters to find what you're looking for." : "Add your first candidate to get started."}
-            actionLabel={searchQuery ? undefined : "Add Candidate"}
-            onAction={searchQuery ? undefined : () => {}}
-          />
+          <div className="flex flex-col items-center justify-center py-12">
+            <EmptyState
+              icon={Users}
+              title="No candidates found"
+              description={searchQuery ? "Try adjusting your search or filters to find what you're looking for." : "Add your first candidate to get started."}
+            />
+            {!searchQuery && (
+              <div className="mt-4">
+                <CandidateFormDialog />
+              </div>
+            )}
+          </div>
         )}
       </div>
     </DashboardLayout>

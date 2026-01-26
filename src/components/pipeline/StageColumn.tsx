@@ -6,6 +6,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreVertical } from "lucide-react";
 import { CandidateCard } from "./CandidateCard";
+import { ApplicationFormDialog } from "./ApplicationFormDialog";
 import { ApplicationWithDetails } from "@/hooks/use-applications";
 
 interface StageColumnProps {
@@ -14,7 +15,6 @@ interface StageColumnProps {
   color: string;
   bgColor: string;
   applications: ApplicationWithDetails[];
-  onAddCandidate?: () => void;
 }
 
 export function StageColumn({
@@ -23,7 +23,6 @@ export function StageColumn({
   color,
   bgColor,
   applications,
-  onAddCandidate,
 }: StageColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id });
 
@@ -60,12 +59,13 @@ export function StageColumn({
       </SortableContext>
 
       {/* Add Button */}
-      <button
-        onClick={onAddCandidate}
-        className="w-full py-3 mt-3 border-2 border-dashed border-border rounded-xl text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-      >
-        + Add Candidate
-      </button>
+      <ApplicationFormDialog
+        trigger={
+          <button className="w-full py-3 mt-3 border-2 border-dashed border-border rounded-xl text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors">
+            + Add Candidate
+          </button>
+        }
+      />
     </div>
   );
 }

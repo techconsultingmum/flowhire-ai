@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -8,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Clock, Star, Loader2 } from "lucide-react";
+import { Clock, Star, Loader2 } from "lucide-react";
 import {
   DndContext,
   DragEndEvent,
@@ -21,6 +20,7 @@ import {
 } from "@dnd-kit/core";
 import { StageColumn } from "@/components/pipeline/StageColumn";
 import { CandidateCard } from "@/components/pipeline/CandidateCard";
+import { ApplicationFormDialog } from "@/components/pipeline/ApplicationFormDialog";
 import { useApplications, PIPELINE_STAGES, ApplicationWithDetails } from "@/hooks/use-applications";
 import { useJobs } from "@/hooks/use-jobs";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -125,10 +125,9 @@ export default function Pipeline() {
                 ))}
               </SelectContent>
             </Select>
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />
-              Add Candidate
-            </Button>
+            <ApplicationFormDialog 
+              defaultJobId={jobFilter !== "all" ? jobFilter : undefined} 
+            />
           </div>
         </div>
 
@@ -138,6 +137,8 @@ export default function Pipeline() {
             icon={Users}
             title="No applications yet"
             description="Start by adding candidates and jobs, then create applications to track them through the pipeline."
+            actionLabel="Add Application"
+            onAction={() => {}}
           />
         ) : (
           <DndContext
@@ -172,7 +173,7 @@ export default function Pipeline() {
         <div className="flex items-center gap-6 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4" />
-            <span>Avg. time in stage: 3.5 days</span>
+            <span>Drag cards to move between stages</span>
           </div>
           <div className="flex items-center gap-2">
             <Star className="w-4 h-4 text-warning fill-warning" />

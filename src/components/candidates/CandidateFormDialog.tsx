@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -21,8 +21,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useCandidates } from "@/hooks/use-candidates";
-import { Plus, Loader2 } from "lucide-react";
+import { useCandidates, Candidate } from "@/hooks/use-candidates";
+import { Plus, Loader2, Edit } from "lucide-react";
 
 const candidateSchema = z.object({
   first_name: z.string().min(1, "First name is required").max(50, "First name must be less than 50 characters"),
@@ -38,11 +38,13 @@ type CandidateFormValues = z.infer<typeof candidateSchema>;
 
 interface CandidateFormDialogProps {
   trigger?: React.ReactNode;
+  candidate?: Candidate;
 }
 
-export function CandidateFormDialog({ trigger }: CandidateFormDialogProps) {
+export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogProps) {
   const [open, setOpen] = useState(false);
-  const { createCandidate } = useCandidates();
+  const { createCandidate, updateCandidate } = useCandidates();
+  const isEditing = !!candidate;
 
   const form = useForm<CandidateFormValues>({
     resolver: zodResolver(candidateSchema),
@@ -57,41 +59,89 @@ export function CandidateFormDialog({ trigger }: CandidateFormDialogProps) {
     },
   });
 
+  // Reset form when dialog opens with candidate data
+  useEffect(() => {
+    if (open && candidate) {
+      form.reset({
+        first_name: candidate.first_name,
+        last_name: candidate.last_name,
+        email: candidate.email,
+        phone: candidate.phone || "",
+        skills: candidate.skills?.join(", ") || "",
+        notes: candidate.notes || "",
+        resume_url: candidate.resume_url || "",
+      });
+    } else if (open && !candidate) {
+      form.reset({
+        first_name: "",
+        last_name: "",
+        email: "",
+        phone: "",
+        skills: "",
+        notes: "",
+        resume_url: "",
+      });
+    }
+  }, [open, candidate, form]);
+
   const onSubmit = async (values: CandidateFormValues) => {
     const skills = values.skills
       ? values.skills.split(",").map((s) => s.trim()).filter(Boolean)
       : null;
 
-    await createCandidate.mutateAsync({
-      first_name: values.first_name,
-      last_name: values.last_name,
-      email: values.email,
-      phone: values.phone || null,
-      skills,
-      notes: values.notes || null,
-      resume_url: values.resume_url || null,
-      ai_score: null,
-    });
+    if (isEditing && candidate) {
+      await updateCandidate.mutateAsync({
+        id: candidate.id,
+        first_name: values.first_name,
+        last_name: values.last_name,
+        email: values.email,
+        phone: values.phone || null,
+        skills,
+        notes: values.notes || null,
+        resume_url: values.resume_url || null,
+      });
+    } else {
+      await createCandidate.mutateAsync({
+        first_name: values.first_name,
+        last_name: values.last_name,
+        email: values.email,
+        phone: values.phone || null,
+        skills,
+        notes: values.notes || null,
+        resume_url: values.resume_url || null,
+        ai_score: null,
+      });
+    }
 
     form.reset();
     setOpen(false);
   };
 
+  const isPending = createCandidate.isPending || updateCandidate.isPending;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button className="gap-2">
-            <Plus className="w-4 h-4" />
-            Add Candidate
-          </Button>
+          isEditing ? (
+            <Button variant="outline" size="icon">
+              <Edit className="w-4 h-4" />
+            </Button>
+          ) : (
+            <Button className="gap-2">
+              <Plus className="w-4 h-4" />
+              Add Candidate
+            </Button>
+          )
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Add New Candidate</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit Candidate" : "Add New Candidate"}</DialogTitle>
           <DialogDescription>
-            Enter the candidate's information below. All fields marked with * are required.
+            {isEditing 
+              ? "Update the candidate's information below."
+              : "Enter the candidate's information below. All fields marked with * are required."}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -204,9 +254,9 @@ export function CandidateFormDialog({ trigger }: CandidateFormDialogProps) {
               <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={createCandidate.isPending}>
-                {createCandidate.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Add Candidate
+              <Button type="submit" disabled={isPending}>
+                {isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {isEditing ? "Save Changes" : "Add Candidate"}
               </Button>
             </div>
           </form>

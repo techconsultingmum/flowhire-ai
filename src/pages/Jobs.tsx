@@ -194,13 +194,18 @@ export default function Jobs() {
             ))}
           </div>
         ) : (
-          <EmptyState
-            icon={Briefcase}
-            title="No jobs found"
-            description={searchQuery ? "Try adjusting your search or filters to find what you're looking for." : "Create your first job posting to get started."}
-            actionLabel={searchQuery ? undefined : "Create Job"}
-            onAction={searchQuery ? undefined : () => {}}
-          />
+          <div className="flex flex-col items-center justify-center py-12">
+            <EmptyState
+              icon={Briefcase}
+              title="No jobs found"
+              description={searchQuery ? "Try adjusting your search or filters to find what you're looking for." : "Create your first job posting to get started."}
+            />
+            {!searchQuery && (
+              <div className="mt-4">
+                <JobFormDialog />
+              </div>
+            )}
+          </div>
         )}
       </div>
     </DashboardLayout>
