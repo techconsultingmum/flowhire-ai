@@ -59,6 +59,17 @@ export function ApplicationFormDialog({ trigger, defaultJobId }: ApplicationForm
     },
   });
 
+  // Reset form when dialog opens
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      form.reset({
+        candidate_id: "",
+        job_id: defaultJobId || "",
+      });
+    }
+    setOpen(newOpen);
+  };
+
   // Filter out candidates who already have an application for the selected job
   const selectedJobId = form.watch("job_id");
   const availableCandidates = candidates.filter((candidate) => {
@@ -80,7 +91,7 @@ export function ApplicationFormDialog({ trigger, defaultJobId }: ApplicationForm
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {trigger || (
           <Button className="gap-2">

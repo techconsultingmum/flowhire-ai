@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -5,15 +6,137 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { z } from "zod";
+
+const passwordSchema = z.object({
+  currentPassword: z.string().min(6, "Password must be at least 6 characters"),
+  newPassword: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
 
 export default function Settings() {
+  const { profile, role, isLoading: authLoading } = useAuth();
+  const [isSaving, setIsSaving] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  
+  // Profile form state
+  const [firstName, setFirstName] = useState(profile?.first_name || "");
+  const [lastName, setLastName] = useState(profile?.last_name || "");
+  
+  // Password form state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
+
+  // Notification preferences
+  const [notifications, setNotifications] = useState({
+    newApplications: true,
+    interviewReminders: true,
+    stageChanges: true,
+    teamMentions: true,
+    weeklyDigest: false,
+  });
+
+  // Initialize form values when profile loads
+  useState(() => {
+    if (profile) {
+      setFirstName(profile.first_name || "");
+      setLastName(profile.last_name || "");
+    }
+  });
+
+  const handleSaveProfile = async () => {
+    if (!profile) return;
+    
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          first_name: firstName,
+          last_name: lastName,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("user_id", profile.user_id);
+
+      if (error) throw error;
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      toast.error("Failed to update profile");
+      console.error("Profile update error:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    setPasswordErrors({});
+    
+    const validation = passwordSchema.safeParse({
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    });
+
+    if (!validation.success) {
+      const errors: Record<string, string> = {};
+      validation.error.errors.forEach((err) => {
+        if (err.path[0]) {
+          errors[err.path[0] as string] = err.message;
+        }
+      });
+      setPasswordErrors(errors);
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
+
+      if (error) throw error;
+      
+      toast.success("Password updated successfully");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update password");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const roleLabel = role === "admin" ? "Admin" : role === "hiring_manager" ? "Hiring Manager" : "Recruiter";
+  const initials = profile?.first_name && profile?.last_name
+    ? `${profile.first_name[0]}${profile.last_name[0]}`.toUpperCase()
+    : profile?.email?.substring(0, 2).toUpperCase() || "??";
+
+  if (authLoading) {
+    return (
+      <DashboardLayout>
+        <div className="space-y-8 max-w-4xl">
+          <div>
+            <Skeleton className="h-9 w-32" />
+            <Skeleton className="h-5 w-64 mt-2" />
+          </div>
+          <Skeleton className="h-12 w-96" />
+          <Skeleton className="h-96 w-full" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-8 max-w-4xl">
@@ -28,9 +151,7 @@ export default function Settings() {
         <Tabs defaultValue="profile" className="space-y-6">
           <TabsList className="bg-muted">
             <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="company">Company</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
-            <TabsTrigger value="team">Team</TabsTrigger>
           </TabsList>
 
           {/* Profile Tab */}
@@ -40,46 +161,58 @@ export default function Settings() {
               <div className="flex items-center gap-6 mb-6">
                 <Avatar className="w-20 h-20 bg-gradient-to-br from-primary to-accent">
                   <AvatarFallback className="bg-transparent text-white text-2xl font-medium">
-                    JD
+                    {initials}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <Button variant="outline" size="sm">
-                    Change Photo
-                  </Button>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    JPG, PNG or GIF. Max 2MB.
-                  </p>
+                  <p className="font-medium">{profile?.email}</p>
+                  <p className="text-sm text-muted-foreground">{roleLabel}</p>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" defaultValue="John" />
+                  <Input 
+                    id="firstName" 
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Enter your first name"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" defaultValue="Doe" />
+                  <Input 
+                    id="lastName" 
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Enter your last name"
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" defaultValue="john@company.com" />
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    value={profile?.email || ""} 
+                    disabled
+                    className="bg-muted"
+                  />
+                  <p className="text-xs text-muted-foreground">Email cannot be changed</p>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="role">Role</Label>
-                  <Select defaultValue="admin">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="recruiter">Recruiter</SelectItem>
-                      <SelectItem value="hiring_manager">Hiring Manager</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label>Role</Label>
+                  <Input 
+                    value={roleLabel}
+                    disabled
+                    className="bg-muted"
+                  />
+                  <p className="text-xs text-muted-foreground">Contact an admin to change your role</p>
                 </div>
               </div>
-              <Button className="mt-6">Save Changes</Button>
+              <Button className="mt-6" onClick={handleSaveProfile} disabled={isSaving}>
+                {isSaving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Save Changes
+              </Button>
             </div>
 
             <div className="bg-card rounded-2xl border border-border p-6">
@@ -87,64 +220,48 @@ export default function Settings() {
               <div className="space-y-4 max-w-md">
                 <div className="space-y-2">
                   <Label htmlFor="currentPassword">Current Password</Label>
-                  <Input id="currentPassword" type="password" />
+                  <Input 
+                    id="currentPassword" 
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Enter current password"
+                  />
+                  {passwordErrors.currentPassword && (
+                    <p className="text-sm text-destructive">{passwordErrors.currentPassword}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="newPassword">New Password</Label>
-                  <Input id="newPassword" type="password" />
+                  <Input 
+                    id="newPassword" 
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                  />
+                  {passwordErrors.newPassword && (
+                    <p className="text-sm text-destructive">{passwordErrors.newPassword}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input id="confirmPassword" type="password" />
+                  <Label htmlFor="confirmNewPassword">Confirm New Password</Label>
+                  <Input 
+                    id="confirmNewPassword" 
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                  />
+                  {passwordErrors.confirmPassword && (
+                    <p className="text-sm text-destructive">{passwordErrors.confirmPassword}</p>
+                  )}
                 </div>
               </div>
-              <Button className="mt-6">Update Password</Button>
-            </div>
-          </TabsContent>
-
-          {/* Company Tab */}
-          <TabsContent value="company" className="space-y-6">
-            <div className="bg-card rounded-2xl border border-border p-6">
-              <h3 className="text-lg font-semibold mb-6">Company Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name</Label>
-                  <Input id="companyName" defaultValue="Acme Corp" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="website">Website</Label>
-                  <Input id="website" defaultValue="https://acme.com" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="industry">Industry</Label>
-                  <Select defaultValue="technology">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="technology">Technology</SelectItem>
-                      <SelectItem value="healthcare">Healthcare</SelectItem>
-                      <SelectItem value="finance">Finance</SelectItem>
-                      <SelectItem value="retail">Retail</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="size">Company Size</Label>
-                  <Select defaultValue="50-200">
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1-10">1-10 employees</SelectItem>
-                      <SelectItem value="11-50">11-50 employees</SelectItem>
-                      <SelectItem value="50-200">50-200 employees</SelectItem>
-                      <SelectItem value="200+">200+ employees</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <Button className="mt-6">Save Changes</Button>
+              <Button className="mt-6" onClick={handleChangePassword} disabled={isChangingPassword}>
+                {isChangingPassword && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                Update Password
+              </Button>
             </div>
           </TabsContent>
 
@@ -154,78 +271,32 @@ export default function Settings() {
               <h3 className="text-lg font-semibold mb-6">Email Notifications</h3>
               <div className="space-y-4">
                 {[
-                  { label: "New candidate applications", description: "Get notified when candidates apply" },
-                  { label: "Interview reminders", description: "Receive reminders before scheduled interviews" },
-                  { label: "Stage changes", description: "Updates when candidates move through pipeline" },
-                  { label: "Team mentions", description: "When someone mentions you in notes" },
-                  { label: "Weekly digest", description: "Weekly summary of hiring activity" },
+                  { key: "newApplications", label: "New candidate applications", description: "Get notified when candidates apply" },
+                  { key: "interviewReminders", label: "Interview reminders", description: "Receive reminders before scheduled interviews" },
+                  { key: "stageChanges", label: "Stage changes", description: "Updates when candidates move through pipeline" },
+                  { key: "teamMentions", label: "Team mentions", description: "When someone mentions you in notes" },
+                  { key: "weeklyDigest", label: "Weekly digest", description: "Weekly summary of hiring activity" },
                 ].map((item) => (
                   <div
-                    key={item.label}
+                    key={item.key}
                     className="flex items-center justify-between p-4 rounded-xl border border-border"
                   >
                     <div>
                       <p className="font-medium">{item.label}</p>
                       <p className="text-sm text-muted-foreground">{item.description}</p>
                     </div>
-                    <Switch defaultChecked />
+                    <Switch 
+                      checked={notifications[item.key as keyof typeof notifications]}
+                      onCheckedChange={(checked) => 
+                        setNotifications(prev => ({ ...prev, [item.key]: checked }))
+                      }
+                    />
                   </div>
                 ))}
               </div>
-            </div>
-          </TabsContent>
-
-          {/* Team Tab */}
-          <TabsContent value="team" className="space-y-6">
-            <div className="bg-card rounded-2xl border border-border p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-lg font-semibold">Team Members</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Manage who has access to your Hireflow account.
-                  </p>
-                </div>
-                <Button>Invite Member</Button>
-              </div>
-              <div className="space-y-4">
-                {[
-                  { name: "John Doe", email: "john@company.com", role: "Admin", initials: "JD" },
-                  { name: "Jane Cooper", email: "jane@company.com", role: "Recruiter", initials: "JC" },
-                  { name: "Mike Johnson", email: "mike@company.com", role: "Hiring Manager", initials: "MJ" },
-                ].map((member) => (
-                  <div
-                    key={member.email}
-                    className="flex items-center justify-between p-4 rounded-xl border border-border"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Avatar className="w-10 h-10 bg-gradient-to-br from-primary to-accent">
-                        <AvatarFallback className="bg-transparent text-white text-sm font-medium">
-                          {member.initials}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="font-medium">{member.name}</p>
-                        <p className="text-sm text-muted-foreground">{member.email}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Select defaultValue={member.role.toLowerCase().replace(" ", "_")}>
-                        <SelectTrigger className="w-[140px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="recruiter">Recruiter</SelectItem>
-                          <SelectItem value="hiring_manager">Hiring Manager</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button variant="ghost" size="sm" className="text-destructive">
-                        Remove
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p className="text-sm text-muted-foreground mt-4">
+                Note: Email notification preferences are stored locally. Full email integration coming soon.
+              </p>
             </div>
           </TabsContent>
         </Tabs>

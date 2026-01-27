@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -21,8 +21,10 @@ import {
 import { useCandidates } from "@/hooks/use-candidates";
 import { useApplications } from "@/hooks/use-applications";
 import { useJobs } from "@/hooks/use-jobs";
+import { useResumeUrl } from "@/hooks/use-resume-url";
 import { AIScoringButton } from "@/components/candidates/AIScoringButton";
 import { CandidateFormDialog } from "@/components/candidates/CandidateFormDialog";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Mail,
@@ -35,6 +37,8 @@ import {
   Clock,
   Trash2,
   Loader2,
+  Download,
+  ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
 
@@ -53,7 +57,9 @@ export default function CandidateDetail() {
   const { candidates, isLoading: candidatesLoading, deleteCandidate } = useCandidates();
   const { applications, isLoading: applicationsLoading } = useApplications();
   const { jobs } = useJobs();
+  const { getResumeUrl, isLoading: resumeLoading } = useResumeUrl();
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoadingResume, setIsLoadingResume] = useState(false);
 
   const candidate = candidates.find((c) => c.id === id);
   const candidateApplications = applications.filter((a) => a.candidate_id === id);
@@ -65,11 +71,31 @@ export default function CandidateDetail() {
     setIsDeleting(true);
     try {
       await deleteCandidate.mutateAsync(candidate.id);
+      toast.success("Candidate deleted successfully");
       navigate("/candidates");
     } catch (error) {
+      toast.error("Failed to delete candidate");
       setIsDeleting(false);
     }
   };
+
+  const handleViewResume = useCallback(async () => {
+    if (!candidate?.resume_url) return;
+    
+    setIsLoadingResume(true);
+    try {
+      const freshUrl = await getResumeUrl(candidate.resume_url);
+      if (freshUrl) {
+        window.open(freshUrl, "_blank");
+      } else {
+        toast.error("Could not load resume. Please try again.");
+      }
+    } catch (error) {
+      toast.error("Failed to load resume");
+    } finally {
+      setIsLoadingResume(false);
+    }
+  }, [candidate?.resume_url, getResumeUrl]);
 
   if (isLoading) {
     return (
@@ -192,22 +218,23 @@ export default function CandidateDetail() {
                       {candidate.resume_url && (
                         <div className="flex items-center gap-2 text-sm">
                           <FileText className="w-4 h-4 text-muted-foreground" />
-                          <a
-                            href={candidate.resume_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary hover:underline inline-flex items-center gap-1"
+                          <button
+                            onClick={handleViewResume}
+                            disabled={isLoadingResume}
+                            className="text-primary hover:underline inline-flex items-center gap-1 disabled:opacity-50"
                           >
-                            View Resume
-                          </a>
-                          <span className="text-muted-foreground">•</span>
-                          <a
-                            href={candidate.resume_url}
-                            download
-                            className="text-primary hover:underline inline-flex items-center gap-1"
-                          >
-                            Download
-                          </a>
+                            {isLoadingResume ? (
+                              <>
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                                Loading...
+                              </>
+                            ) : (
+                              <>
+                                <ExternalLink className="w-3 h-3" />
+                                View Resume
+                              </>
+                            )}
+                          </button>
                         </div>
                       )}
                     </div>

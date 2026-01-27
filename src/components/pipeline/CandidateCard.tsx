@@ -60,10 +60,14 @@ export function CandidateCard({ application }: CandidateCardProps) {
         </div>
       </div>
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-        <div className="flex items-center gap-1 text-sm">
-          <Star className="w-4 h-4 text-warning fill-warning" />
-          <span className="font-medium">{candidate.ai_score ?? 0}%</span>
-        </div>
+        {candidate.ai_score !== null ? (
+          <div className="flex items-center gap-1 text-sm">
+            <Star className="w-4 h-4 text-warning fill-warning" />
+            <span className="font-medium">{candidate.ai_score}%</span>
+          </div>
+        ) : (
+          <span className="text-sm text-muted-foreground">No score</span>
+        )}
         <div className="flex items-center gap-1 text-sm text-muted-foreground">
           <Calendar className="w-3.5 h-3.5" />
           <span>{appliedDate}</span>

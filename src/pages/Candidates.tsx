@@ -19,13 +19,15 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CandidateFormDialog } from "@/components/candidates/CandidateFormDialog";
 import { AIScoringButton } from "@/components/candidates/AIScoringButton";
-import { Search, Filter, Mail, Phone, FileText, Star, Users, ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { Search, Filter, Mail, Phone, FileText, Star, Users, ChevronLeft, ChevronRight, Eye, Loader2 } from "lucide-react";
 import { useSearch } from "@/hooks/use-search";
 import { usePagination } from "@/hooks/use-pagination";
 import { useCandidates, Candidate } from "@/hooks/use-candidates";
 import { useApplications } from "@/hooks/use-applications";
-import { useState, useMemo } from "react";
+import { useResumeUrl } from "@/hooks/use-resume-url";
+import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const stageColors: Record<string, string> = {
   applied: "bg-muted text-muted-foreground",
@@ -39,8 +41,26 @@ const stageColors: Record<string, string> = {
 export default function Candidates() {
   const navigate = useNavigate();
   const [stageFilter, setStageFilter] = useState("all");
+  const [loadingResumeId, setLoadingResumeId] = useState<string | null>(null);
   const { candidates, isLoading: candidatesLoading } = useCandidates();
   const { applications } = useApplications();
+  const { getResumeUrl } = useResumeUrl();
+
+  const handleViewResume = useCallback(async (candidateId: string, resumeUrl: string) => {
+    setLoadingResumeId(candidateId);
+    try {
+      const freshUrl = await getResumeUrl(resumeUrl);
+      if (freshUrl) {
+        window.open(freshUrl, "_blank");
+      } else {
+        toast.error("Could not load resume. Please try again.");
+      }
+    } catch (error) {
+      toast.error("Failed to load resume");
+    } finally {
+      setLoadingResumeId(null);
+    }
+  }, [getResumeUrl]);
 
   // Enrich candidates with their latest application stage
   const enrichedCandidates = useMemo(() => {
@@ -283,9 +303,14 @@ export default function Candidates() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-8 w-8"
-                                  onClick={() => window.open(candidate.resume_url!, "_blank")}
+                                  disabled={loadingResumeId === candidate.id}
+                                  onClick={() => handleViewResume(candidate.id, candidate.resume_url!)}
                                 >
-                                  <FileText className="w-4 h-4" />
+                                  {loadingResumeId === candidate.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                  ) : (
+                                    <FileText className="w-4 h-4" />
+                                  )}
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>View resume</TooltipContent>
