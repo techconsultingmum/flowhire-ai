@@ -24,7 +24,24 @@ export function useUserRoles() {
   const query = useQuery({
     queryKey: ["user-roles"],
     queryFn: async () => {
-      // Get all profiles with their roles
+      // First verify the current user has admin role via server-side check
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+
+      // Check if current user is admin - this query will fail if user is not admin
+      // due to RLS policies on user_roles table (only admins can view all roles)
+      const { data: currentUserRole, error: roleCheckError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .single();
+
+      if (roleCheckError) throw new Error("Unable to verify admin status");
+      if (currentUserRole?.role !== "admin") {
+        throw new Error("Unauthorized: Admin access required");
+      }
+
+      // Get all profiles with their roles (only accessible to admins via RLS)
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("*")
@@ -32,6 +49,7 @@ export function useUserRoles() {
 
       if (profilesError) throw profilesError;
 
+      // Admins can view all roles via RLS policy
       const { data: roles, error: rolesError } = await supabase
         .from("user_roles")
         .select("*");

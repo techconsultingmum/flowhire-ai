@@ -1,22 +1,38 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-interface CandidateData {
-  name: string;
-  skills: string[];
-  notes: string;
-}
+// Input validation schemas
+const candidateSchema = z.object({
+  name: z.string().min(1, "Name is required").max(200, "Name too long"),
+  skills: z.array(z.string().max(100, "Skill name too long")).max(50, "Too many skills"),
+  notes: z.string().max(2000, "Notes too long").optional().nullable(),
+});
 
-interface JobData {
-  title: string;
-  department: string;
-  description: string;
-  requirements: string[];
+const jobSchema = z.object({
+  title: z.string().min(1, "Title is required").max(200, "Title too long"),
+  department: z.string().min(1, "Department is required").max(100, "Department too long"),
+  description: z.string().max(5000, "Description too long").optional().nullable(),
+  requirements: z.array(z.string().max(500, "Requirement too long")).max(50, "Too many requirements"),
+});
+
+const requestSchema = z.object({
+  candidate: candidateSchema,
+  job: jobSchema,
+});
+
+// Sanitize text for safe prompt injection prevention
+function sanitizeForPrompt(text: string | null | undefined): string {
+  if (!text) return "";
+  return text
+    .replace(/[\r\n]+/g, " ") // Replace newlines with spaces
+    .replace(/[`]/g, "'") // Replace backticks
+    .slice(0, 1000); // Enforce max length per field
 }
 
 serve(async (req) => {
@@ -41,18 +57,17 @@ serve(async (req) => {
     );
 
     // Verify user is authenticated
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseClient.auth.getClaims(token);
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
     
-    if (claimsError || !claimsData?.claims) {
-      console.error("Auth error:", claimsError);
+    if (userError || !user) {
+      console.error("Auth error:", userError);
       return new Response(
         JSON.stringify({ error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const userId = claimsData.claims.sub;
+    const userId = user.id;
 
     // Check user role - only recruiters and admins can score
     const { data: roleData, error: roleError } = await supabaseClient
@@ -76,16 +91,48 @@ serve(async (req) => {
       );
     }
 
-    const { candidate, job } = await req.json() as { candidate: CandidateData; job: JobData };
-
-    if (!candidate || !job) {
-      throw new Error("Candidate and job data are required");
+    // Parse and validate request body
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON in request body" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    // Validate input with Zod schema
+    const validationResult = requestSchema.safeParse(requestBody);
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('; ');
+      console.error("Validation error:", errors);
+      return new Response(
+        JSON.stringify({ error: `Invalid input: ${errors}` }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { candidate, job } = validationResult.data;
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
+
+    // Sanitize all user inputs before including in prompt
+    const sanitizedCandidate = {
+      name: sanitizeForPrompt(candidate.name),
+      skills: candidate.skills.map(s => sanitizeForPrompt(s)).filter(Boolean),
+      notes: sanitizeForPrompt(candidate.notes),
+    };
+
+    const sanitizedJob = {
+      title: sanitizeForPrompt(job.title),
+      department: sanitizeForPrompt(job.department),
+      description: sanitizeForPrompt(job.description),
+      requirements: job.requirements.map(r => sanitizeForPrompt(r)).filter(Boolean),
+    };
 
     const systemPrompt = `You are an expert HR recruiter and talent evaluator. Your task is to analyze a candidate's profile against a job posting and provide a compatibility score.
 
@@ -99,15 +146,15 @@ Respond using the provided function to return a structured score and reasoning.`
     const userPrompt = `Evaluate this candidate for the following job position:
 
 **Candidate Profile:**
-- Name: ${candidate.name}
-- Skills: ${candidate.skills.length > 0 ? candidate.skills.join(", ") : "Not specified"}
-- Notes: ${candidate.notes || "No additional notes"}
+- Name: ${sanitizedCandidate.name}
+- Skills: ${sanitizedCandidate.skills.length > 0 ? sanitizedCandidate.skills.join(", ") : "Not specified"}
+- Notes: ${sanitizedCandidate.notes || "No additional notes"}
 
 **Job Position:**
-- Title: ${job.title}
-- Department: ${job.department}
-- Description: ${job.description || "Not specified"}
-- Requirements: ${job.requirements.length > 0 ? job.requirements.join("; ") : "Not specified"}
+- Title: ${sanitizedJob.title}
+- Department: ${sanitizedJob.department}
+- Description: ${sanitizedJob.description || "Not specified"}
+- Requirements: ${sanitizedJob.requirements.length > 0 ? sanitizedJob.requirements.join("; ") : "Not specified"}
 
 Analyze the candidate's fit for this role and provide a score and reasoning.`;
 
