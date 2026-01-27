@@ -133,13 +133,16 @@ export default function Pipeline() {
 
         {/* Pipeline Board */}
         {filteredApplications.length === 0 ? (
-          <EmptyState
-            icon={Users}
-            title="No applications yet"
-            description="Start by adding candidates and jobs, then create applications to track them through the pipeline."
-            actionLabel="Add Application"
-            onAction={() => {}}
-          />
+          <div className="flex flex-col items-center justify-center py-12">
+            <EmptyState
+              icon={Users}
+              title="No applications yet"
+              description="Start by adding candidates and jobs, then create applications to track them through the pipeline."
+            />
+            <div className="mt-4">
+              <ApplicationFormDialog defaultJobId={jobFilter !== "all" ? jobFilter : undefined} />
+            </div>
+          </div>
         ) : (
           <DndContext
             sensors={sensors}

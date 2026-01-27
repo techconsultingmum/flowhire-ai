@@ -95,12 +95,22 @@ export function AIScoringButton({ candidateId, variant = "default", size = "defa
     }
   };
 
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      // Reset state when opening
+      setScore(null);
+      setReasoning("");
+      setSelectedJobId("");
+    }
+    setOpen(newOpen);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant={variant} size={size} className="gap-2">
           <Sparkles className="w-4 h-4" />
-          AI Score
+          {size === "icon" ? null : "AI Score"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">

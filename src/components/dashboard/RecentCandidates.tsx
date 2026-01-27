@@ -97,7 +97,9 @@ export function RecentCandidates() {
                 <Badge variant="outline">New</Badge>
               )}
               <div className="text-right">
-                <p className="text-sm font-semibold">{candidate.score ?? "—"}%</p>
+                <p className="text-sm font-semibold">
+                  {candidate.score !== null ? `${candidate.score}%` : "—"}
+                </p>
                 <p className="text-xs text-muted-foreground">AI Score</p>
               </div>
             </div>

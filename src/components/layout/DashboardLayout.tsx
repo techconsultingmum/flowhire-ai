@@ -50,7 +50,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       {/* Main Content */}
-      <main className="lg:pl-64 min-h-screen transition-all duration-300 pt-16 lg:pt-0">
+      <main className="lg:ml-64 min-h-screen transition-all duration-300 pt-16 lg:pt-0">
         <div className="p-4 lg:p-8">{children}</div>
       </main>
     </div>
