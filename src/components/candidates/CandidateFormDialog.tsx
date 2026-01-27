@@ -146,9 +146,10 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
       .getPublicUrl(fileName);
 
     // Since bucket is private, we need to create a signed URL
+    // Using 2-hour expiry for security - URLs should be regenerated when needed
     const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from('resumes')
-      .createSignedUrl(fileName, 60 * 60 * 24 * 365); // 1 year expiry
+      .createSignedUrl(fileName, 60 * 60 * 2); // 2 hours expiry for security
 
     if (signedUrlError) {
       throw signedUrlError;
