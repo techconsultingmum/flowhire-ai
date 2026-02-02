@@ -101,7 +101,7 @@ export default function Login() {
         <div className="w-full max-w-md">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 mb-8">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary via-purple-500 to-pink-500 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--gradient-primary)' }}>
               <span className="text-primary-foreground font-bold">H</span>
             </div>
             <span className="text-2xl font-bold">Hireflow</span>
@@ -288,6 +288,11 @@ export default function Login() {
               onClick={() => {
                 setIsSignUp(!isSignUp);
                 setErrors({});
+                setEmail("");
+                setPassword("");
+                setConfirmPassword("");
+                setFirstName("");
+                setLastName("");
               }}
               className="text-primary hover:underline font-medium"
             >
@@ -304,7 +309,7 @@ export default function Login() {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/30 rounded-full blur-3xl" />
 
         <div className="relative z-10 text-center max-w-md">
-          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary via-purple-500 to-pink-500 flex items-center justify-center mx-auto mb-8">
+          <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-8" style={{ background: 'var(--gradient-primary)' }}>
             <span className="text-primary-foreground font-bold text-3xl">H</span>
           </div>
           <h2 className="text-3xl font-bold text-primary-foreground mb-4">

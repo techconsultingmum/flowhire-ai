@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,13 +46,13 @@ export default function Settings() {
     weeklyDigest: false,
   });
 
-  // Initialize form values when profile loads
-  useState(() => {
+  // Sync form values when profile loads
+  useEffect(() => {
     if (profile) {
       setFirstName(profile.first_name || "");
       setLastName(profile.last_name || "");
     }
-  });
+  }, [profile]);
 
   const handleSaveProfile = async () => {
     if (!profile) return;

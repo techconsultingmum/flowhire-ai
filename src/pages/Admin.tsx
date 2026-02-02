@@ -69,17 +69,6 @@ export default function Admin() {
     setConfirmDialog({ open: false, userId: "", newRole: "recruiter", userName: "" });
   };
 
-  if (!isAdmin) {
-    return (
-      <DashboardLayout>
-        <EmptyState
-          icon={Shield}
-          title="Access Denied"
-          description="You don't have permission to access the admin panel. Only administrators can manage user roles."
-        />
-      </DashboardLayout>
-    );
-  }
 
   if (isLoading) {
     return (
@@ -87,6 +76,19 @@ export default function Admin() {
         <div className="flex items-center justify-center h-64">
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Handle error state for non-admin users or network errors
+  if (!isAdmin && !isLoading) {
+    return (
+      <DashboardLayout>
+        <EmptyState
+          icon={Shield}
+          title="Access Denied"
+          description="You don't have permission to access the admin panel. Only administrators can manage user roles."
+        />
       </DashboardLayout>
     );
   }
