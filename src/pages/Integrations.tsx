@@ -1,10 +1,23 @@
+import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { FileSpreadsheet, Webhook, MessageSquare, Mail, Calendar, Slack } from "lucide-react";
+import { toast } from "sonner";
 
-const integrations = [
+interface Integration {
+  id: string;
+  name: string;
+  description: string;
+  icon: typeof FileSpreadsheet;
+  iconColor: string;
+  iconBg: string;
+  connected: boolean;
+  status: string;
+}
+
+const initialIntegrations: Integration[] = [
   {
     id: "google-sheets",
     name: "Google Sheets",
@@ -67,7 +80,7 @@ const integrations = [
   },
 ];
 
-const webhookEvents = [
+const initialWebhookEvents = [
   { event: "candidate.created", description: "When a new candidate is added", enabled: true },
   { event: "candidate.stage_changed", description: "When a candidate moves stages", enabled: true },
   { event: "interview.scheduled", description: "When an interview is scheduled", enabled: true },
@@ -77,6 +90,41 @@ const webhookEvents = [
 ];
 
 export default function Integrations() {
+  const [integrations, setIntegrations] = useState<Integration[]>(initialIntegrations);
+  const [webhookEvents, setWebhookEvents] = useState(initialWebhookEvents);
+
+  const handleToggleIntegration = (id: string) => {
+    setIntegrations((prev) =>
+      prev.map((integration) => {
+        if (integration.id === id) {
+          const newConnected = !integration.connected;
+          toast.success(
+            newConnected
+              ? `${integration.name} connected successfully`
+              : `${integration.name} disconnected`
+          );
+          return {
+            ...integration,
+            connected: newConnected,
+            status: newConnected ? "Active" : "Not connected",
+          };
+        }
+        return integration;
+      })
+    );
+  };
+
+  const handleToggleWebhookEvent = (event: string) => {
+    setWebhookEvents((prev) =>
+      prev.map((item) => {
+        if (item.event === event) {
+          return { ...item, enabled: !item.enabled };
+        }
+        return item;
+      })
+    );
+    toast.success("Webhook settings updated");
+  };
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -113,6 +161,7 @@ export default function Integrations() {
               <Button
                 variant={integration.connected ? "outline" : "default"}
                 className="w-full"
+                onClick={() => handleToggleIntegration(integration.id)}
               >
                 {integration.connected ? "Configure" : "Connect"}
               </Button>
@@ -141,7 +190,10 @@ export default function Integrations() {
                   <p className="font-medium font-mono text-sm">{item.event}</p>
                   <p className="text-sm text-muted-foreground">{item.description}</p>
                 </div>
-                <Switch checked={item.enabled} />
+                <Switch 
+                  checked={item.enabled} 
+                  onCheckedChange={() => handleToggleWebhookEvent(item.event)}
+                />
               </div>
             ))}
           </div>

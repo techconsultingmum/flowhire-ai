@@ -40,7 +40,7 @@ export const CTASection = forwardRef<HTMLElement>((_, ref) => {
 
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/dashboard">
+            <Link to="/login">
               <Button size="xl" className="group bg-card text-foreground hover:bg-card/90">
                 Get Started Free
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
