@@ -89,12 +89,24 @@ export function useApplications(jobId?: string) {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
-      toast({ title: "Application created successfully" });
+      const candidateName = data.candidates 
+        ? `${data.candidates.first_name} ${data.candidates.last_name}` 
+        : "Candidate";
+      const jobTitle = data.jobs?.title || "the position";
+      toast({ 
+        title: "Application created",
+        description: `${candidateName} has been added to ${jobTitle}.`,
+      });
     },
     onError: (error) => {
-      toast({ title: "Failed to create application", description: error.message, variant: "destructive" });
+      const message = error.message.includes("duplicate")
+        ? "This candidate has already applied for this position."
+        : error.message.includes("permission")
+        ? "You don't have permission to create applications."
+        : error.message;
+      toast({ title: "Failed to create application", description: message, variant: "destructive" });
     },
   });
 
@@ -104,14 +116,25 @@ export function useApplications(jobId?: string) {
         .from("applications")
         .update({ stage, stage_updated_at: new Date().toISOString() })
         .eq("id", id)
-        .select()
+        .select(`
+          *,
+          candidates (*),
+          jobs (*)
+        `)
         .single();
 
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["applications"] });
+      const candidateName = data.candidates 
+        ? `${data.candidates.first_name} ${data.candidates.last_name}` 
+        : "Candidate";
+      toast({ 
+        title: "Stage updated",
+        description: `${candidateName} moved to ${data.stage}.`,
+      });
     },
     onError: (error) => {
       toast({ title: "Failed to update stage", description: error.message, variant: "destructive" });

@@ -66,12 +66,20 @@ export function useCandidates() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["candidates"] });
-      toast({ title: "Candidate created successfully" });
+      toast({ 
+        title: "Candidate added successfully",
+        description: `${data.first_name} ${data.last_name} has been added to your database.`,
+      });
     },
     onError: (error) => {
-      toast({ title: "Failed to create candidate", description: error.message, variant: "destructive" });
+      const message = error.message.includes("duplicate")
+        ? "A candidate with this email already exists."
+        : error.message.includes("permission")
+        ? "You don't have permission to add candidates."
+        : error.message;
+      toast({ title: "Failed to add candidate", description: message, variant: "destructive" });
     },
   });
 

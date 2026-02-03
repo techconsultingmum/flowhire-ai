@@ -57,18 +57,32 @@ export default function Settings() {
   const handleSaveProfile = async () => {
     if (!profile) return;
     
+    // Trim and validate inputs
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+    
+    if (!trimmedFirstName || !trimmedLastName) {
+      toast.error("First name and last name are required");
+      return;
+    }
+    
     setIsSaving(true);
     try {
       const { error } = await supabase
         .from("profiles")
         .update({
-          first_name: firstName,
-          last_name: lastName,
+          first_name: trimmedFirstName,
+          last_name: trimmedLastName,
           updated_at: new Date().toISOString(),
         })
         .eq("user_id", profile.user_id);
 
       if (error) throw error;
+      
+      // Update local state with trimmed values
+      setFirstName(trimmedFirstName);
+      setLastName(trimmedLastName);
+      
       toast.success("Profile updated successfully");
     } catch (error) {
       toast.error("Failed to update profile");

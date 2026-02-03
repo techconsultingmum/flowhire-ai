@@ -62,24 +62,31 @@ export default function Login() {
     if (!validateForm()) return;
 
     setIsLoading(true);
+    setErrors({}); // Clear previous errors
 
     try {
       if (isSignUp) {
         const { error } = await signUp(email, password, firstName, lastName);
         if (error) {
           if (error.message.includes("already registered")) {
+            setErrors({ email: "This email is already registered" });
             toast.error("This email is already registered. Please sign in instead.");
+          } else if (error.message.includes("Email not confirmed")) {
+            toast.info("Please check your email to confirm your account.");
           } else {
             toast.error(error.message);
           }
         } else {
-          toast.success("Account created successfully! Welcome to Hireflow.");
+          toast.success("Account created! Please check your email to confirm your account.");
         }
       } else {
         const { error } = await signIn(email, password);
         if (error) {
           if (error.message.includes("Invalid login")) {
+            setErrors({ password: "Invalid email or password" });
             toast.error("Invalid email or password. Please try again.");
+          } else if (error.message.includes("Email not confirmed")) {
+            toast.error("Please confirm your email before signing in.");
           } else {
             toast.error(error.message);
           }

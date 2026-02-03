@@ -78,7 +78,11 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section id="features" className="py-24 relative overflow-hidden">
+    <section 
+      id="features" 
+      className="py-24 relative overflow-hidden"
+      aria-labelledby="features-heading"
+    >
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-muted/30 to-background" />
       
@@ -86,7 +90,7 @@ export function FeaturesSection() {
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
           <span className="text-sm font-medium text-primary uppercase tracking-wider">Features</span>
-          <h2 className="text-4xl md:text-5xl font-bold mt-4 mb-6">
+          <h2 id="features-heading" className="text-4xl md:text-5xl font-bold mt-4 mb-6">
             Everything You Need to{" "}
             <span className="gradient-text">Hire the Best</span>
           </h2>
