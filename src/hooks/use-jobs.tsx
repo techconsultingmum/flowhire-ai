@@ -69,12 +69,18 @@ export function useJobs() {
       if (error) throw error;
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
-      toast({ title: "Job created successfully" });
+      toast({ 
+        title: "Job created successfully",
+        description: `"${data.title}" has been added to your job listings.`,
+      });
     },
     onError: (error) => {
-      toast({ title: "Failed to create job", description: error.message, variant: "destructive" });
+      const message = error.message.includes("permission")
+        ? "You don't have permission to create jobs."
+        : error.message;
+      toast({ title: "Failed to create job", description: message, variant: "destructive" });
     },
   });
 

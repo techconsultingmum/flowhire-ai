@@ -1,13 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { Home, ArrowLeft } from "lucide-react";
+import { Home, ArrowLeft, Search } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
+    // Set document title for accessibility
+    document.title = "Page Not Found | Hireflow";
   }, [location.pathname]);
 
   return (
@@ -17,34 +19,49 @@ const NotFound = () => {
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl" />
 
-      <div className="relative z-10 text-center px-4">
+      <main className="relative z-10 text-center px-4" role="main" aria-labelledby="error-title">
         {/* 404 Number */}
-        <div className="mb-8">
-          <span className="text-[150px] md:text-[200px] font-bold leading-none gradient-text">
+        <div className="mb-8" aria-hidden="true">
+          <span className="text-[120px] sm:text-[150px] md:text-[200px] font-bold leading-none gradient-text">
             404
           </span>
         </div>
 
         {/* Message */}
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">Page Not Found</h1>
-        <p className="text-xl text-muted-foreground max-w-md mx-auto mb-8">
+        <h1 id="error-title" className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
+          Page Not Found
+        </h1>
+        <p className="text-lg sm:text-xl text-muted-foreground max-w-md mx-auto mb-8">
           Oops! The page you're looking for doesn't exist or has been moved.
         </p>
 
         {/* Actions */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link to="/">
-            <Button size="lg" className="gap-2">
-              <Home className="w-4 h-4" />
+            <Button size="lg" className="gap-2 w-full sm:w-auto">
+              <Home className="w-4 h-4" aria-hidden="true" />
               Go Home
             </Button>
           </Link>
-          <Button variant="outline" size="lg" className="gap-2" onClick={() => window.history.back()}>
-            <ArrowLeft className="w-4 h-4" />
+          <Button 
+            variant="outline" 
+            size="lg" 
+            className="gap-2 w-full sm:w-auto" 
+            onClick={() => window.history.back()}
+          >
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
             Go Back
           </Button>
         </div>
-      </div>
+
+        {/* Helpful suggestion */}
+        <p className="mt-8 text-sm text-muted-foreground">
+          Looking for something specific?{" "}
+          <Link to="/jobs" className="text-primary hover:underline">
+            Browse open jobs
+          </Link>
+        </p>
+      </main>
     </div>
   );
 };
