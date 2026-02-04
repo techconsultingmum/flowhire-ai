@@ -66,13 +66,16 @@ export default function Login() {
 
     try {
       if (isSignUp) {
-        const { error } = await signUp(email, password, firstName, lastName);
+        const { error } = await signUp(email, password, firstName.trim(), lastName.trim());
         if (error) {
-          if (error.message.includes("already registered")) {
+          if (error.message.includes("already registered") || error.message.includes("already been registered")) {
             setErrors({ email: "This email is already registered" });
             toast.error("This email is already registered. Please sign in instead.");
           } else if (error.message.includes("Email not confirmed")) {
             toast.info("Please check your email to confirm your account.");
+          } else if (error.message.includes("Password")) {
+            setErrors({ password: error.message });
+            toast.error(error.message);
           } else {
             toast.error(error.message);
           }
@@ -82,7 +85,7 @@ export default function Login() {
       } else {
         const { error } = await signIn(email, password);
         if (error) {
-          if (error.message.includes("Invalid login")) {
+          if (error.message.includes("Invalid login") || error.message.includes("Invalid email or password")) {
             setErrors({ password: "Invalid email or password" });
             toast.error("Invalid email or password. Please try again.");
           } else if (error.message.includes("Email not confirmed")) {
