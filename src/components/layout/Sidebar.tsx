@@ -167,24 +167,25 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                 </p>
               </div>
             )}
-            {!collapsed && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent"
-                    aria-label="Sign out"
-                    onClick={handleSignOut}
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Sign out</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent",
+                    collapsed && "w-full"
+                  )}
+                  aria-label="Sign out"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side={collapsed ? "right" : "top"}>
+                <p>Sign out</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </div>
       </div>
