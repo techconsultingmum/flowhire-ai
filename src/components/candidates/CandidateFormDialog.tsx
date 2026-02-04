@@ -141,11 +141,7 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
       throw uploadError;
     }
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('resumes')
-      .getPublicUrl(fileName);
-
-    // Since bucket is private, we need to create a signed URL
+    // Create signed URL for secure access (bucket is private)
     // Using 2-hour expiry for security - URLs should be regenerated when needed
     const { data: signedUrlData, error: signedUrlError } = await supabase.storage
       .from('resumes')
