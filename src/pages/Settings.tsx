@@ -114,11 +114,30 @@ export default function Settings() {
 
     setIsChangingPassword(true);
     try {
-      const { error } = await supabase.auth.updateUser({
+      // Step 1: Re-authenticate with current password to verify identity
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) {
+        throw new Error("User email not found. Please try logging in again.");
+      }
+      
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: currentPassword,
+      });
+      
+      if (signInError) {
+        setPasswordErrors({ currentPassword: "Current password is incorrect" });
+        toast.error("Current password is incorrect");
+        setIsChangingPassword(false);
+        return;
+      }
+      
+      // Step 2: Update to new password after successful verification
+      const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
       });
 
-      if (error) throw error;
+      if (updateError) throw updateError;
       
       toast.success("Password updated successfully");
       setCurrentPassword("");
