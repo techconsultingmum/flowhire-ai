@@ -13,6 +13,14 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Skip to main content for accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:outline-none"
+      >
+        Skip to main content
+      </a>
+      
       {/* Mobile Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-50 h-16 bg-sidebar border-b border-sidebar-border flex items-center px-4">
         <Button
@@ -50,7 +58,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       </div>
 
       {/* Main Content */}
-      <main className="lg:ml-64 min-h-screen transition-all duration-300 pt-16 lg:pt-0">
+      <main 
+        id="main-content"
+        role="main"
+        className="lg:ml-64 min-h-screen transition-all duration-300 pt-16 lg:pt-0"
+      >
         <div className="p-4 lg:p-8">{children}</div>
       </main>
     </div>
