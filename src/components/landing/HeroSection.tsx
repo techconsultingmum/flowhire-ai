@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Sparkles, Users, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
+ import { forwardRef } from "react";
 
-export function HeroSection() {
+export const HeroSection = forwardRef<HTMLElement>((_, ref) => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+    <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/30" />
       
@@ -76,4 +77,6 @@ export function HeroSection() {
       </div>
     </section>
   );
-}
+});
+
+HeroSection.displayName = "HeroSection";

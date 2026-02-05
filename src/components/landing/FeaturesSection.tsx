@@ -9,6 +9,7 @@ import {
   Users2, 
   Webhook 
 } from "lucide-react";
+ import { forwardRef } from "react";
 
 const features = [
   {
@@ -76,9 +77,10 @@ const features = [
   },
 ];
 
-export function FeaturesSection() {
+export const FeaturesSection = forwardRef<HTMLElement>((_, ref) => {
   return (
     <section 
+      ref={ref}
       id="features" 
       className="py-24 relative overflow-hidden"
       aria-labelledby="features-heading"
@@ -118,4 +120,6 @@ export function FeaturesSection() {
       </div>
     </section>
   );
-}
+});
+
+FeaturesSection.displayName = "FeaturesSection";
