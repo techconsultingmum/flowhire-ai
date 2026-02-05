@@ -3,12 +3,14 @@ import { CSS } from "@dnd-kit/utilities";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Star, Calendar, GripVertical } from "lucide-react";
 import { ApplicationWithDetails } from "@/hooks/use-applications";
+ import { useNavigate } from "react-router-dom";
 
 interface CandidateCardProps {
   application: ApplicationWithDetails;
 }
 
 export function CandidateCard({ application }: CandidateCardProps) {
+  const navigate = useNavigate();
   const {
     attributes,
     listeners,
@@ -31,17 +33,37 @@ export function CandidateCard({ application }: CandidateCardProps) {
     day: "numeric",
   });
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on the drag handle
+    if ((e.target as HTMLElement).closest('[data-drag-handle]')) {
+      return;
+    }
+    navigate(`/candidates/${candidate.id}`);
+  };
+
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-card rounded-xl border border-border p-4 hover:shadow-md hover:border-primary/20 transition-all"
+      onClick={handleCardClick}
+      className="bg-card rounded-xl border border-border p-4 hover:shadow-md hover:border-primary/20 transition-all cursor-pointer"
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          navigate(`/candidates/${candidate.id}`);
+        }
+      }}
+      aria-label={`View ${candidate.first_name} ${candidate.last_name}'s details`}
     >
       <div className="flex items-start gap-3">
         <div
           {...attributes}
           {...listeners}
+          data-drag-handle
           className="cursor-grab active:cursor-grabbing mt-1"
+          onClick={(e) => e.stopPropagation()}
         >
           <GripVertical className="w-4 h-4 text-muted-foreground" />
         </div>

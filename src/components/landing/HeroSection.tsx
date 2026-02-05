@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Play, Sparkles, Users, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
+ import { forwardRef } from "react";
 
-export function HeroSection() {
+export const HeroSection = forwardRef<HTMLElement>((_, ref) => {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
+    <section ref={ref} className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-muted/30" />
       
@@ -66,7 +67,7 @@ export function HeroSection() {
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center gap-2 text-4xl font-bold">
-                <Sparkles className="w-8 h-8 text-purple-500" />
+                <Sparkles className="w-8 h-8 text-primary" />
                 <span>1M+</span>
               </div>
               <span className="text-muted-foreground">Candidates Processed</span>
@@ -76,4 +77,6 @@ export function HeroSection() {
       </div>
     </section>
   );
-}
+});
+
+HeroSection.displayName = "HeroSection";

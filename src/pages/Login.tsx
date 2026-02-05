@@ -7,6 +7,8 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight, User, Loader2 } from "lucide-react
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 import { z } from "zod";
+ import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
+ import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
@@ -180,9 +182,7 @@ export default function Login() {
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
                 {!isSignUp && (
-                  <a href="#" className="text-sm text-primary hover:underline">
-                    Forgot password?
-                  </a>
+                  <ForgotPasswordDialog />
                 )}
               </div>
               <div className="relative">
@@ -210,6 +210,7 @@ export default function Login() {
               {errors.password && (
                 <p className="text-sm text-destructive">{errors.password}</p>
               )}
+              {isSignUp && <PasswordStrengthIndicator password={password} />}
             </div>
 
             {isSignUp && (
