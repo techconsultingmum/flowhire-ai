@@ -67,7 +67,7 @@ export const HeroSection = forwardRef<HTMLElement>((_, ref) => {
             </div>
             <div className="flex flex-col items-center gap-2">
               <div className="flex items-center gap-2 text-4xl font-bold">
-                <Sparkles className="w-8 h-8 text-purple-500" />
+                <Sparkles className="w-8 h-8 text-primary" />
                 <span>1M+</span>
               </div>
               <span className="text-muted-foreground">Candidates Processed</span>
