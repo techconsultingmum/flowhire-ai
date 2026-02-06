@@ -3,27 +3,27 @@ import { forwardRef } from "react";
 
 const footerLinks = {
   product: [
-    { label: "Features", href: "#features" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "Integrations", href: "#integrations" },
-    { label: "Changelog", href: "#" },
+    { label: "Features", href: "/#features" },
+    { label: "Pricing", to: "/pricing" },
+    { label: "Integrations", to: "/integrations-overview" },
+    { label: "Changelog", to: "/changelog" },
   ],
   company: [
-    { label: "About", href: "#about" },
-    { label: "Blog", href: "#" },
-    { label: "Careers", href: "#" },
-    { label: "Contact", href: "#" },
+    { label: "About", to: "/about" },
+    { label: "Blog", to: "/blog" },
+    { label: "Careers", to: "/careers" },
+    { label: "Contact", to: "/contact" },
   ],
   resources: [
-    { label: "Documentation", href: "#" },
-    { label: "Help Center", href: "#" },
-    { label: "API Reference", href: "#" },
-    { label: "Status", href: "#" },
+    { label: "Documentation", to: "/docs" },
+    { label: "Help Center", to: "/help" },
+    { label: "API Reference", to: "/api" },
+    { label: "Status", to: "/status" },
   ],
   legal: [
-    { label: "Privacy", href: "#" },
-    { label: "Terms", href: "#" },
-    { label: "Security", href: "#" },
+    { label: "Privacy", to: "/privacy" },
+    { label: "Terms", to: "/terms" },
+    { label: "Security", to: "/security" },
   ],
 };
 
@@ -51,12 +51,21 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
             <ul className="space-y-3">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-secondary-foreground/70 hover:text-secondary-foreground transition-colors text-sm"
-                  >
-                    {link.label}
-                  </a>
+                  {link.to ? (
+                    <Link
+                      to={link.to}
+                      className="text-secondary-foreground/70 hover:text-secondary-foreground transition-colors text-sm"
+                    >
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <a
+                      href={link.href}
+                      className="text-secondary-foreground/70 hover:text-secondary-foreground transition-colors text-sm"
+                    >
+                      {link.label}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
@@ -68,12 +77,12 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.to}
                     className="text-secondary-foreground/70 hover:text-secondary-foreground transition-colors text-sm"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -85,12 +94,12 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
             <ul className="space-y-3">
               {footerLinks.resources.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.to}
                     className="text-secondary-foreground/70 hover:text-secondary-foreground transition-colors text-sm"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -102,12 +111,12 @@ export const Footer = forwardRef<HTMLElement>((_, ref) => {
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
+                  <Link
+                    to={link.to}
                     className="text-secondary-foreground/70 hover:text-secondary-foreground transition-colors text-sm"
                   >
                     {link.label}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
