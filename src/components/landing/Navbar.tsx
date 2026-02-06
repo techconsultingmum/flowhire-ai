@@ -28,18 +28,18 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <a href="/#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Features
             </a>
-            <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link to="/pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Pricing
-            </a>
-            <a href="#integrations" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            </Link>
+            <Link to="/integrations-overview" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Integrations
-            </a>
-            <a href="#about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+            </Link>
+            <Link to="/about" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               About
-            </a>
+            </Link>
           </div>
 
           {/* CTA Buttons */}
@@ -76,18 +76,18 @@ export function Navbar() {
             role="menu"
           >
             <div className="flex flex-col gap-4">
-              <a href="#features" onClick={handleNavClick} className="text-sm text-muted-foreground hover:text-foreground transition-colors" role="menuitem">
+              <a href="/#features" onClick={handleNavClick} className="text-sm text-muted-foreground hover:text-foreground transition-colors" role="menuitem">
                 Features
               </a>
-              <a href="#pricing" onClick={handleNavClick} className="text-sm text-muted-foreground hover:text-foreground transition-colors" role="menuitem">
+              <Link to="/pricing" onClick={handleNavClick} className="text-sm text-muted-foreground hover:text-foreground transition-colors" role="menuitem">
                 Pricing
-              </a>
-              <a href="#integrations" onClick={handleNavClick} className="text-sm text-muted-foreground hover:text-foreground transition-colors" role="menuitem">
+              </Link>
+              <Link to="/integrations-overview" onClick={handleNavClick} className="text-sm text-muted-foreground hover:text-foreground transition-colors" role="menuitem">
                 Integrations
-              </a>
-              <a href="#about" onClick={handleNavClick} className="text-sm text-muted-foreground hover:text-foreground transition-colors" role="menuitem">
+              </Link>
+              <Link to="/about" onClick={handleNavClick} className="text-sm text-muted-foreground hover:text-foreground transition-colors" role="menuitem">
                 About
-              </a>
+              </Link>
               <div className="flex flex-col gap-2 pt-4 border-t border-border">
                 <Link to="/login" onClick={handleNavClick}>
                   <Button variant="ghost" className="w-full">
