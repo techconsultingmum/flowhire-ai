@@ -12,10 +12,12 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JobFormDialog } from "@/components/jobs/JobFormDialog";
-import { Briefcase, MapPin, Users, Search, Filter } from "lucide-react";
+import { JobAssignmentsDialog } from "@/components/jobs/JobAssignmentsDialog";
+import { Briefcase, MapPin, Users, Search, Filter, UserPlus } from "lucide-react";
 import { useSearch } from "@/hooks/use-search";
 import { useJobs } from "@/hooks/use-jobs";
 import { useApplications } from "@/hooks/use-applications";
+import { useAuth } from "@/hooks/use-auth";
 import { useState, useMemo } from "react";
 
 const statusColors: Record<string, string> = {
@@ -38,10 +40,14 @@ const formatSalary = (min: number | null, max: number | null) => {
 };
 
 export default function Jobs() {
+  const { role } = useAuth();
   const [statusFilter, setStatusFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
+  const [selectedJobForAssignment, setSelectedJobForAssignment] = useState<{ id: string; title: string } | null>(null);
   const { jobs, isLoading } = useJobs();
   const { applications } = useApplications();
+
+  const isAdmin = role === "admin";
 
   // Count applicants per job
   const jobsWithApplicants = useMemo(() => {
@@ -165,7 +171,23 @@ export default function Jobs() {
                   <Badge className={statusColors[job.status] || statusColors.draft}>
                     {job.status}
                   </Badge>
-                  <Badge variant="secondary">{job.type}</Badge>
+                  <div className="flex items-center gap-2">
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedJobForAssignment({ id: job.id, title: job.title });
+                        }}
+                        aria-label="Manage team assignments"
+                        title="Manage team assignments"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                      </Button>
+                    )}
+                    <Badge variant="secondary">{job.type}</Badge>
+                  </div>
                 </div>
                 <h3 className="text-lg font-semibold mb-2">{job.title}</h3>
                 <div className="space-y-2 text-sm text-muted-foreground mb-4">
@@ -208,6 +230,16 @@ export default function Jobs() {
           </div>
         )}
       </div>
+
+      {/* Job Assignments Dialog */}
+      {selectedJobForAssignment && (
+        <JobAssignmentsDialog
+          open={!!selectedJobForAssignment}
+          onOpenChange={(open) => !open && setSelectedJobForAssignment(null)}
+          jobId={selectedJobForAssignment.id}
+          jobTitle={selectedJobForAssignment.title}
+        />
+      )}
     </DashboardLayout>
   );
 }

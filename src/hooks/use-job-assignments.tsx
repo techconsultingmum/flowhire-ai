@@ -12,18 +12,13 @@ export interface JobAssignment {
   created_at: string;
 }
 
-export interface JobAssignmentWithDetails extends JobAssignment {
-  profiles?: {
-    id: string;
-    user_id: string;
-    email: string;
-    first_name: string | null;
-    last_name: string | null;
-  };
+export interface JobAssignmentWithJob extends JobAssignment {
   jobs?: {
     id: string;
     title: string;
     department: string;
+    location: string;
+    status: string;
   };
 }
 
@@ -40,8 +35,7 @@ export function useJobAssignments(jobId?: string) {
         .from("job_assignments")
         .select(`
           *,
-          profiles!job_assignments_user_id_fkey (id, user_id, email, first_name, last_name),
-          jobs (id, title, department)
+          jobs (id, title, department, location, status)
         `)
         .order("assigned_at", { ascending: false });
 
@@ -51,7 +45,7 @@ export function useJobAssignments(jobId?: string) {
 
       const { data, error } = await q;
       if (error) throw error;
-      return data as JobAssignmentWithDetails[];
+      return data as JobAssignmentWithJob[];
     },
   });
 
@@ -148,7 +142,7 @@ export function useMyAssignedJobs() {
         .order("assigned_at", { ascending: false });
 
       if (error) throw error;
-      return data;
+      return data as JobAssignmentWithJob[];
     },
   });
 

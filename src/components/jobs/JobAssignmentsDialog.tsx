@@ -12,7 +12,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { useJobAssignments } from "@/hooks/use-job-assignments";
 import { useUserRoles, type UserWithRole } from "@/hooks/use-user-roles";
 import { useAuth } from "@/hooks/use-auth";
-import { Loader2, UserPlus, UserMinus, Users } from "lucide-react";
+import { Loader2, UserPlus, UserMinus, Users, AlertCircle } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface JobAssignmentsDialogProps {
   open: boolean;
@@ -36,7 +37,7 @@ export function JobAssignmentsDialog({
 }: JobAssignmentsDialogProps) {
   const { role } = useAuth();
   const { assignments, isLoading: assignmentsLoading, assignUserToJob, removeUserFromJob } = useJobAssignments(jobId);
-  const { users, isLoading: usersLoading } = useUserRoles();
+  const { users, isLoading: usersLoading, error: usersError } = useUserRoles();
   const [selectedUserId, setSelectedUserId] = useState<string>("");
 
   const isAdmin = role === "admin";
@@ -54,10 +55,10 @@ export function JobAssignmentsDialog({
     await removeUserFromJob.mutateAsync({ userId, jobId });
   };
 
-  const getInitials = (user: UserWithRole) => {
-    const first = user.first_name?.[0] || "";
-    const last = user.last_name?.[0] || "";
-    return (first + last).toUpperCase() || user.email[0].toUpperCase();
+  const getInitials = (firstName?: string | null, lastName?: string | null, email?: string) => {
+    const first = firstName?.[0] || "";
+    const last = lastName?.[0] || "";
+    return (first + last).toUpperCase() || email?.[0]?.toUpperCase() || "?";
   };
 
   const getRoleBadgeVariant = (role: string) => {
@@ -71,6 +72,11 @@ export function JobAssignmentsDialog({
       default:
         return "outline";
     }
+  };
+
+  // Find user details from the users list
+  const getUserDetails = (userId: string): UserWithRole | undefined => {
+    return users.find(u => u.user_id === userId);
   };
 
   return (
@@ -87,52 +93,72 @@ export function JobAssignmentsDialog({
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Add new assignment */}
+          {/* Add new assignment - only for admins */}
           {isAdmin && (
-            <div className="flex gap-2">
-              <Select
-                value={selectedUserId}
-                onValueChange={setSelectedUserId}
-                disabled={usersLoading || availableUsers.length === 0}
-              >
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder={
-                    usersLoading 
-                      ? "Loading users..." 
-                      : availableUsers.length === 0 
-                        ? "All users assigned" 
-                        : "Select a user to assign"
-                  } />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableUsers.map((user) => (
-                    <SelectItem key={user.user_id} value={user.user_id}>
-                      <div className="flex items-center gap-2">
-                        <span>
-                          {user.first_name} {user.last_name}
-                        </span>
-                        <span className="text-muted-foreground text-xs">
-                          ({user.email})
-                        </span>
-                        <Badge variant={getRoleBadgeVariant(user.role)} className="ml-1 text-xs">
-                          {user.role}
-                        </Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button 
-                onClick={handleAssign} 
-                disabled={!selectedUserId || assignUserToJob.isPending}
-              >
-                {assignUserToJob.isPending ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <UserPlus className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
+            <>
+              {usersError ? (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Unable to load users. Only admins can view all users.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <div className="flex gap-2">
+                  <Select
+                    value={selectedUserId}
+                    onValueChange={setSelectedUserId}
+                    disabled={usersLoading || availableUsers.length === 0}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder={
+                        usersLoading 
+                          ? "Loading users..." 
+                          : availableUsers.length === 0 
+                            ? "All users assigned" 
+                            : "Select a user to assign"
+                      } />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableUsers.map((user) => (
+                        <SelectItem key={user.user_id} value={user.user_id}>
+                          <div className="flex items-center gap-2">
+                            <span>
+                              {user.first_name || ""} {user.last_name || ""}
+                            </span>
+                            <span className="text-muted-foreground text-xs">
+                              ({user.email})
+                            </span>
+                            <Badge variant={getRoleBadgeVariant(user.role)} className="ml-1 text-xs">
+                              {user.role}
+                            </Badge>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button 
+                    onClick={handleAssign} 
+                    disabled={!selectedUserId || assignUserToJob.isPending}
+                  >
+                    {assignUserToJob.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <UserPlus className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              )}
+            </>
+          )}
+
+          {!isAdmin && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Only admins can manage job assignments.
+              </AlertDescription>
+            </Alert>
           )}
 
           {/* Current assignments */}
@@ -152,7 +178,7 @@ export function JobAssignmentsDialog({
             ) : (
               <div className="space-y-2 max-h-[300px] overflow-y-auto">
                 {assignments.map((assignment) => {
-                  const user = users.find(u => u.user_id === assignment.user_id);
+                  const user = getUserDetails(assignment.user_id);
                   
                   return (
                     <div
@@ -162,16 +188,18 @@ export function JobAssignmentsDialog({
                       <div className="flex items-center gap-3">
                         <Avatar className="h-8 w-8">
                           <AvatarFallback className="text-xs">
-                            {user ? getInitials(user) : "?"}
+                            {getInitials(user?.first_name, user?.last_name, user?.email)}
                           </AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="text-sm font-medium">
-                            {user?.first_name} {user?.last_name}
+                            {user ? `${user.first_name || ""} ${user.last_name || ""}`.trim() || user.email : "Unknown User"}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            {user?.email}
-                          </p>
+                          {user && (
+                            <p className="text-xs text-muted-foreground">
+                              {user.email}
+                            </p>
+                          )}
                         </div>
                         {user && (
                           <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">
