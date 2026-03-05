@@ -68,9 +68,9 @@ export function RecentCandidates() {
     <div className="bg-card rounded-2xl border border-border p-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold">Recent Candidates</h3>
-        <a href="/candidates" className="text-sm text-primary hover:underline">
+        <Link to="/candidates" className="text-sm text-primary hover:underline">
           View all
-        </a>
+        </Link>
       </div>
       <div className="space-y-4">
         {recentCandidates.length > 0 ? (

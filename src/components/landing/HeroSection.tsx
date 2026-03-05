@@ -43,10 +43,12 @@ export const HeroSection = forwardRef<HTMLElement>((_, ref) => {
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
-            <Button variant="outline" size="xl" className="gap-2">
-              <Play className="w-5 h-5" />
-              Watch Demo
-            </Button>
+            <Link to="/contact">
+              <Button variant="outline" size="xl" className="gap-2">
+                <Play className="w-5 h-5" />
+                Watch Demo
+              </Button>
+            </Link>
           </div>
 
           {/* Stats */}

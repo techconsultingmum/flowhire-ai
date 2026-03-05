@@ -46,9 +46,11 @@ export const CTASection = forwardRef<HTMLElement>((_, ref) => {
                 <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Button>
             </Link>
-            <Button variant="heroOutline" size="xl">
-              Talk to Sales
-            </Button>
+            <Link to="/contact">
+              <Button variant="heroOutline" size="xl">
+                Talk to Sales
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
