@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Briefcase, MapPin, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useJobs } from "@/hooks/use-jobs";
 import { useApplications } from "@/hooks/use-applications";
 import { useMemo } from "react";

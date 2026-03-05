@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCandidates } from "@/hooks/use-candidates";
 import { useApplications } from "@/hooks/use-applications";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useMemo } from "react";
 
 const stageColors: Record<string, string> = {
