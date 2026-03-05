@@ -148,10 +148,6 @@ export default function Jobs() {
               ))}
             </SelectContent>
           </Select>
-          <Button variant="outline" className="gap-2">
-            <Filter className="w-4 h-4" />
-            More Filters
-          </Button>
         </div>
 
         {/* Results count */}

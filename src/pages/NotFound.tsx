@@ -57,8 +57,8 @@ const NotFound = () => {
         {/* Helpful suggestion */}
         <p className="mt-8 text-sm text-muted-foreground">
           Looking for something specific?{" "}
-          <Link to="/jobs" className="text-primary hover:underline">
-            Browse open jobs
+          <Link to="/contact" className="text-primary hover:underline">
+            Contact our team
           </Link>
         </p>
       </main>

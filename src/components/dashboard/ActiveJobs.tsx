@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Briefcase, MapPin, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useJobs } from "@/hooks/use-jobs";
 import { useApplications } from "@/hooks/use-applications";
 import { useMemo } from "react";
@@ -48,9 +49,9 @@ export function ActiveJobs() {
     <div className="bg-card rounded-2xl border border-border p-6">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold">Active Jobs</h3>
-        <a href="/jobs" className="text-sm text-primary hover:underline">
+        <Link to="/jobs" className="text-sm text-primary hover:underline">
           View all
-        </a>
+        </Link>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {activeJobs.length > 0 ? (
