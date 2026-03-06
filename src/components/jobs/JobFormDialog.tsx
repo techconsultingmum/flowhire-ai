@@ -29,6 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useJobs } from "@/hooks/use-jobs";
+import { supabase } from "@/integrations/supabase/client";
 import { Plus, Loader2 } from "lucide-react";
 
 const jobSchema = z.object({

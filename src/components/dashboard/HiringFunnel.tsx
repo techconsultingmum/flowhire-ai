@@ -28,7 +28,7 @@ export function HiringFunnel() {
   }, [applications]);
 
   const conversionRate = useMemo(() => {
-    const applied = applications.filter((a) => a.stage === "applied" || true).length; // All started as applied
+    const applied = applications.length; // All applications started as applied
     const hired = applications.filter((a) => a.stage === "hired").length;
     if (applied === 0) return "0";
     return ((hired / applied) * 100).toFixed(1);

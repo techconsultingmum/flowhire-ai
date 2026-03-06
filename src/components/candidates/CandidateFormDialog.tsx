@@ -141,17 +141,9 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
       throw uploadError;
     }
 
-    // Create signed URL for secure access (bucket is private)
-    // Using 2-hour expiry for security - URLs should be regenerated when needed
-    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-      .from('resumes')
-      .createSignedUrl(fileName, 60 * 60 * 2); // 2 hours expiry for security
-
-    if (signedUrlError) {
-      throw signedUrlError;
-    }
-
-    return signedUrlData.signedUrl;
+    // Store the file path, not a signed URL - signed URLs expire
+    // The useResumeUrl hook generates fresh signed URLs on demand
+    return fileName;
   };
 
   const onSubmit = async (values: CandidateFormValues) => {
