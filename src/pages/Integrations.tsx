@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
