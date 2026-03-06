@@ -17,10 +17,12 @@ export function useResumeUrl() {
     setError(null);
 
     try {
-      // Extract the file path from the full URL if it's a signed URL
       let filePath = resumePath;
       
-      // If it's already a full URL, extract just the file path
+      // Handle different stored formats:
+      // 1. Full signed URL (legacy) - extract path from URL
+      // 2. Full storage path like "resumes/uuid/file.pdf" 
+      // 3. Relative path like "uuid/file.pdf"
       if (resumePath.includes("/storage/v1/object/")) {
         const pathMatch = resumePath.match(/resumes\/(.+?)(\?|$)/);
         if (pathMatch) {
@@ -29,6 +31,7 @@ export function useResumeUrl() {
       } else if (resumePath.startsWith("resumes/")) {
         filePath = resumePath.replace("resumes/", "");
       }
+      // Otherwise assume it's already a relative path within the bucket
 
       // Generate a new signed URL with 2-hour expiry
       const { data, error: signedUrlError } = await supabase.storage
