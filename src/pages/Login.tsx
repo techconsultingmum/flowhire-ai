@@ -5,6 +5,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, User, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { toast } from "sonner";
 import { z } from "zod";
  import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
