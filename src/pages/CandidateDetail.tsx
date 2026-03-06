@@ -62,6 +62,9 @@ export default function CandidateDetail() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoadingResume, setIsLoadingResume] = useState(false);
 
+  const candidateFullName = candidate ? `${candidate.first_name} ${candidate.last_name}` : "Candidate";
+  usePageTitle(candidate ? candidateFullName : "Candidate Not Found");
+
   const candidate = candidates.find((c) => c.id === id);
   const candidateApplications = applications.filter((a) => a.candidate_id === id);
 

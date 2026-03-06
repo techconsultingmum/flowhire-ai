@@ -93,6 +93,7 @@ const initialWebhookEvents = [
 export default function Integrations() {
   const [integrations, setIntegrations] = useState<Integration[]>(initialIntegrations);
   const [webhookEvents, setWebhookEvents] = useState(initialWebhookEvents);
+  usePageTitle("Integrations");
 
   const handleToggleIntegration = (id: string) => {
     setIntegrations((prev) =>
