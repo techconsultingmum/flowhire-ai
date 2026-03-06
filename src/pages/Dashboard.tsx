@@ -8,6 +8,7 @@ import { Users, Briefcase, Clock, TrendingUp } from "lucide-react";
 import { useCandidates } from "@/hooks/use-candidates";
 import { useJobs } from "@/hooks/use-jobs";
 import { useApplications } from "@/hooks/use-applications";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { useMemo } from "react";
 import { differenceInDays } from "date-fns";
 
