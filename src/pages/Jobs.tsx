@@ -18,6 +18,7 @@ import { useSearch } from "@/hooks/use-search";
 import { useJobs } from "@/hooks/use-jobs";
 import { useApplications } from "@/hooks/use-applications";
 import { useAuth } from "@/hooks/use-auth";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { useState, useMemo } from "react";
 
 const statusColors: Record<string, string> = {
@@ -41,6 +42,7 @@ const formatSalary = (min: number | null, max: number | null) => {
 
 export default function Jobs() {
   const { role } = useAuth();
+  usePageTitle("Jobs");
   const [statusFilter, setStatusFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [selectedJobForAssignment, setSelectedJobForAssignment] = useState<{ id: string; title: string } | null>(null);

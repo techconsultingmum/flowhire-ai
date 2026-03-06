@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import {
   Select,
@@ -37,6 +38,7 @@ const stageConfig = {
 
 export default function Pipeline() {
   const [jobFilter, setJobFilter] = useState<string>("all");
+  usePageTitle("Pipeline");
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const { applications, isLoading, updateApplicationStage } = useApplications();

@@ -5,6 +5,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, User, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { toast } from "sonner";
 import { z } from "zod";
  import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
@@ -28,6 +29,7 @@ export default function Login() {
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  usePageTitle(isSignUp ? "Sign Up" : "Sign In");
 
   const from = location.state?.from?.pathname || "/dashboard";
 

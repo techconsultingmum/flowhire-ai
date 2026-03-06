@@ -31,6 +31,7 @@ import {
 import { Shield, Users, Loader2 } from "lucide-react";
 import { useUserRoles, AppRole } from "@/hooks/use-user-roles";
 import { useAuth } from "@/hooks/use-auth";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { EmptyState } from "@/components/ui/empty-state";
 
 const roleColors: Record<AppRole, string> = {
@@ -48,6 +49,7 @@ const roleLabels: Record<AppRole, string> = {
 export default function Admin() {
   const { users, isLoading, updateUserRole } = useUserRoles();
   const { user, role: currentUserRole } = useAuth();
+  usePageTitle("Admin Panel");
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     userId: string;

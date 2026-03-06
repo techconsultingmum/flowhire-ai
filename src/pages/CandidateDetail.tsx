@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { useParams, useNavigate } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
@@ -63,6 +64,9 @@ export default function CandidateDetail() {
 
   const candidate = candidates.find((c) => c.id === id);
   const candidateApplications = applications.filter((a) => a.candidate_id === id);
+
+  const candidateFullName = candidate ? `${candidate.first_name} ${candidate.last_name}` : "Candidate";
+  usePageTitle(candidate ? candidateFullName : "Candidate Not Found");
 
   const isLoading = candidatesLoading || applicationsLoading;
 

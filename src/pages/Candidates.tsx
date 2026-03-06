@@ -27,6 +27,7 @@ import { useApplications } from "@/hooks/use-applications";
 import { useResumeUrl } from "@/hooks/use-resume-url";
 import { useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { toast } from "sonner";
 
 const stageColors: Record<string, string> = {
@@ -40,6 +41,7 @@ const stageColors: Record<string, string> = {
 
 export default function Candidates() {
   const navigate = useNavigate();
+  usePageTitle("Candidates");
   const [stageFilter, setStageFilter] = useState("all");
   const [loadingResumeId, setLoadingResumeId] = useState<string | null>(null);
   const { candidates, isLoading: candidatesLoading } = useCandidates();

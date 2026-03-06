@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -92,6 +93,7 @@ const initialWebhookEvents = [
 export default function Integrations() {
   const [integrations, setIntegrations] = useState<Integration[]>(initialIntegrations);
   const [webhookEvents, setWebhookEvents] = useState(initialWebhookEvents);
+  usePageTitle("Integrations");
 
   const handleToggleIntegration = (id: string) => {
     setIntegrations((prev) =>
