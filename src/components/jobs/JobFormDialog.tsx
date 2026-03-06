@@ -73,6 +73,9 @@ export function JobFormDialog({ trigger }: JobFormDialogProps) {
       ? values.requirements.split("\n").map((r) => r.trim()).filter(Boolean)
       : null;
 
+    // Get current user ID for created_by
+    const { data: { user } } = await supabase.auth.getUser();
+
     await createJob.mutateAsync({
       title: values.title,
       department: values.department,
@@ -83,7 +86,7 @@ export function JobFormDialog({ trigger }: JobFormDialogProps) {
       salary_max: values.salary_max ? Number(values.salary_max) : null,
       description: values.description || null,
       requirements,
-      created_by: null,
+      created_by: user?.id ?? null,
     });
 
     form.reset();
