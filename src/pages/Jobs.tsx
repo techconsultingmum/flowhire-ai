@@ -18,6 +18,7 @@ import { useSearch } from "@/hooks/use-search";
 import { useJobs } from "@/hooks/use-jobs";
 import { useApplications } from "@/hooks/use-applications";
 import { useAuth } from "@/hooks/use-auth";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { useState, useMemo } from "react";
 
 const statusColors: Record<string, string> = {
