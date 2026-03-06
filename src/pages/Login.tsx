@@ -29,6 +29,7 @@ export default function Login() {
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  usePageTitle(isSignUp ? "Sign Up" : "Sign In");
 
   const from = location.state?.from?.pathname || "/dashboard";
 

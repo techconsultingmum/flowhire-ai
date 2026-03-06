@@ -42,6 +42,7 @@ const formatSalary = (min: number | null, max: number | null) => {
 
 export default function Jobs() {
   const { role } = useAuth();
+  usePageTitle("Jobs");
   const [statusFilter, setStatusFilter] = useState("all");
   const [departmentFilter, setDepartmentFilter] = useState("all");
   const [selectedJobForAssignment, setSelectedJobForAssignment] = useState<{ id: string; title: string } | null>(null);

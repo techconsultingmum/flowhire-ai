@@ -25,6 +25,7 @@ const passwordSchema = z.object({
 
 export default function Settings() {
   const { profile, role, isLoading: authLoading } = useAuth();
+  usePageTitle("Settings");
   const [isSaving, setIsSaving] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   

@@ -49,6 +49,7 @@ const roleLabels: Record<AppRole, string> = {
 export default function Admin() {
   const { users, isLoading, updateUserRole } = useUserRoles();
   const { user, role: currentUserRole } = useAuth();
+  usePageTitle("Admin Panel");
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     userId: string;

@@ -16,6 +16,7 @@ export default function Dashboard() {
   const { candidates, isLoading: candidatesLoading } = useCandidates();
   const { jobs, isLoading: jobsLoading } = useJobs();
   const { applications, isLoading: applicationsLoading } = useApplications();
+  usePageTitle("Dashboard");
 
   const isLoading = candidatesLoading || jobsLoading || applicationsLoading;
 

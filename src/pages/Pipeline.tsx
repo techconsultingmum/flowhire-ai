@@ -38,6 +38,7 @@ const stageConfig = {
 
 export default function Pipeline() {
   const [jobFilter, setJobFilter] = useState<string>("all");
+  usePageTitle("Pipeline");
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const { applications, isLoading, updateApplicationStage } = useApplications();

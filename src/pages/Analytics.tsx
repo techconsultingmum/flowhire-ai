@@ -18,6 +18,7 @@ import { differenceInDays, subDays, isAfter } from "date-fns";
 
 export default function Analytics() {
   const [timePeriod, setTimePeriod] = useState("30");
+  usePageTitle("Analytics");
   
   const { candidates, isLoading: candidatesLoading } = useCandidates();
   const { jobs, isLoading: jobsLoading } = useJobs();

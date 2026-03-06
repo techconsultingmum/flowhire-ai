@@ -41,6 +41,7 @@ const stageColors: Record<string, string> = {
 
 export default function Candidates() {
   const navigate = useNavigate();
+  usePageTitle("Candidates");
   const [stageFilter, setStageFilter] = useState("all");
   const [loadingResumeId, setLoadingResumeId] = useState<string | null>(null);
   const { candidates, isLoading: candidatesLoading } = useCandidates();
