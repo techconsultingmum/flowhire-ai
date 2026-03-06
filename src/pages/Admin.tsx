@@ -31,6 +31,7 @@ import {
 import { Shield, Users, Loader2 } from "lucide-react";
 import { useUserRoles, AppRole } from "@/hooks/use-user-roles";
 import { useAuth } from "@/hooks/use-auth";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { EmptyState } from "@/components/ui/empty-state";
 
 const roleColors: Record<AppRole, string> = {
