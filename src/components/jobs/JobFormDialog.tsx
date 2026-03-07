@@ -78,28 +78,32 @@ export function JobFormDialog({ trigger }: JobFormDialogProps) {
   });
 
   const onSubmit = async (values: JobFormValues) => {
-    const requirements = values.requirements
-      ? values.requirements.split("\n").map((r) => r.trim()).filter(Boolean)
-      : null;
+    try {
+      const requirements = values.requirements
+        ? values.requirements.split("\n").map((r) => r.trim()).filter(Boolean)
+        : null;
 
-    // Get current user ID for created_by
-    const { data: { user } } = await supabase.auth.getUser();
+      // Get current user ID for created_by
+      const { data: { user } } = await supabase.auth.getUser();
 
-    await createJob.mutateAsync({
-      title: values.title,
-      department: values.department,
-      location: values.location,
-      type: values.type,
-      status: values.status,
-      salary_min: values.salary_min ? Number(values.salary_min) : null,
-      salary_max: values.salary_max ? Number(values.salary_max) : null,
-      description: values.description || null,
-      requirements,
-      created_by: user?.id ?? null,
-    });
+      await createJob.mutateAsync({
+        title: values.title,
+        department: values.department,
+        location: values.location,
+        type: values.type,
+        status: values.status,
+        salary_min: values.salary_min ? Number(values.salary_min) : null,
+        salary_max: values.salary_max ? Number(values.salary_max) : null,
+        description: values.description || null,
+        requirements,
+        created_by: user?.id ?? null,
+      });
 
-    form.reset();
-    setOpen(false);
+      form.reset();
+      setOpen(false);
+    } catch {
+      // Error is already handled by the mutation's onError callback
+    }
   };
 
   const handleOpenChange = (isOpen: boolean) => {

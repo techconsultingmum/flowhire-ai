@@ -23,6 +23,26 @@ const passwordSchema = z.object({
   path: ["confirmPassword"],
 });
 
+const NOTIFICATION_STORAGE_KEY = "hireflow_notification_prefs";
+
+const defaultNotifications = {
+  newApplications: true,
+  interviewReminders: true,
+  stageChanges: true,
+  teamMentions: true,
+  weeklyDigest: false,
+};
+
+function loadNotificationPrefs() {
+  try {
+    const stored = localStorage.getItem(NOTIFICATION_STORAGE_KEY);
+    if (stored) return { ...defaultNotifications, ...JSON.parse(stored) };
+  } catch {
+    // Ignore parse errors
+  }
+  return defaultNotifications;
+}
+
 export default function Settings() {
   const { profile, role, isLoading: authLoading } = useAuth();
   usePageTitle("Settings");
@@ -39,14 +59,17 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
 
-  // Notification preferences
-  const [notifications, setNotifications] = useState({
-    newApplications: true,
-    interviewReminders: true,
-    stageChanges: true,
-    teamMentions: true,
-    weeklyDigest: false,
-  });
+  // Notification preferences - persisted to localStorage
+  const [notifications, setNotifications] = useState(loadNotificationPrefs);
+
+  // Persist notification changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(notifications));
+    } catch {
+      // Ignore storage errors
+    }
+  }, [notifications]);
 
   // Sync form values when profile loads
   useEffect(() => {
@@ -59,7 +82,6 @@ export default function Settings() {
   const handleSaveProfile = async () => {
     if (!profile) return;
     
-    // Trim and validate inputs
     const trimmedFirstName = firstName.trim();
     const trimmedLastName = lastName.trim();
     
@@ -81,7 +103,6 @@ export default function Settings() {
 
       if (error) throw error;
       
-      // Update local state with trimmed values
       setFirstName(trimmedFirstName);
       setLastName(trimmedLastName);
       
@@ -116,7 +137,6 @@ export default function Settings() {
 
     setIsChangingPassword(true);
     try {
-      // Step 1: Re-authenticate with current password to verify identity
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) {
         throw new Error("User email not found. Please try logging in again.");
@@ -134,7 +154,6 @@ export default function Settings() {
         return;
       }
       
-      // Step 2: Update to new password after successful verification
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -330,7 +349,7 @@ export default function Settings() {
                 ))}
               </div>
               <p className="text-sm text-muted-foreground mt-4">
-                Note: Email notification preferences are stored locally. Full email integration coming soon.
+                Preferences are saved automatically. Full email integration coming soon.
               </p>
             </div>
           </TabsContent>
