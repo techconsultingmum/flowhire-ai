@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 
 interface UsePaginationOptions {
   totalItems: number;
@@ -14,9 +14,16 @@ export function usePagination({
   const [currentPage, setCurrentPage] = useState(initialPage);
 
   const totalPages = useMemo(
-    () => Math.ceil(totalItems / itemsPerPage),
+    () => Math.max(1, Math.ceil(totalItems / itemsPerPage)),
     [totalItems, itemsPerPage]
   );
+
+  // Reset to page 1 when total items changes (e.g. filter/search)
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(1);
+    }
+  }, [totalPages, currentPage]);
 
   const startIndex = useMemo(
     () => (currentPage - 1) * itemsPerPage,
@@ -47,6 +54,8 @@ export function usePagination({
     }
   }, [currentPage]);
 
+  const resetPage = useCallback(() => setCurrentPage(1), []);
+
   const canGoNext = currentPage < totalPages;
   const canGoPrev = currentPage > 1;
 
@@ -58,6 +67,7 @@ export function usePagination({
     goToPage,
     nextPage,
     prevPage,
+    resetPage,
     canGoNext,
     canGoPrev,
     itemsPerPage,

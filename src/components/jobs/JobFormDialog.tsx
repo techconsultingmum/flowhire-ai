@@ -42,7 +42,15 @@ const jobSchema = z.object({
   salary_max: z.coerce.number().min(0, "Salary must be positive").optional().or(z.literal("")),
   description: z.string().max(5000, "Description must be less than 5000 characters").optional(),
   requirements: z.string().optional(),
-});
+}).refine(
+  (data) => {
+    if (data.salary_min && data.salary_max && typeof data.salary_min === "number" && typeof data.salary_max === "number") {
+      return data.salary_min <= data.salary_max;
+    }
+    return true;
+  },
+  { message: "Minimum salary cannot exceed maximum salary", path: ["salary_max"] }
+);
 
 type JobFormValues = z.infer<typeof jobSchema>;
 
