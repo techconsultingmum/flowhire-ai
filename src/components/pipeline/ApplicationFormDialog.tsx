@@ -80,14 +80,18 @@ export function ApplicationFormDialog({ trigger, defaultJobId }: ApplicationForm
   });
 
   const onSubmit = async (values: ApplicationFormValues) => {
-    await createApplication.mutateAsync({
-      candidate_id: values.candidate_id,
-      job_id: values.job_id,
-      stage: "applied",
-    });
+    try {
+      await createApplication.mutateAsync({
+        candidate_id: values.candidate_id,
+        job_id: values.job_id,
+        stage: "applied",
+      });
 
-    form.reset();
-    setOpen(false);
+      form.reset();
+      setOpen(false);
+    } catch {
+      // Error is already handled by the mutation's onError callback
+    }
   };
 
   return (
