@@ -163,7 +163,7 @@ export default function Jobs() {
             {filteredJobs.map((job) => (
               <div
                 key={job.id}
-                className="bg-card rounded-2xl border border-border p-6 hover:border-primary/30 transition-all cursor-pointer hover-lift"
+                className="bg-card rounded-2xl border border-border p-6 hover:border-primary/30 transition-all hover-lift"
               >
                 <div className="flex items-start justify-between mb-4">
                   <Badge className={statusColors[job.status] || statusColors.draft}>
@@ -204,11 +204,14 @@ export default function Jobs() {
                     <span className="font-medium">{job.applicantCount}</span>
                     <span className="text-muted-foreground">applicants</span>
                   </span>
-                  {formatSalary(job.salary_min, job.salary_max) && (
-                    <span className="text-sm font-medium text-primary">
-                      {formatSalary(job.salary_min, job.salary_max)}
-                    </span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {formatSalary(job.salary_min, job.salary_max) && (
+                      <span className="text-sm font-medium text-primary">
+                        {formatSalary(job.salary_min, job.salary_max)}
+                      </span>
+                    )}
+                    <JobFormDialog job={job} />
+                  </div>
                 </div>
               </div>
             ))}
