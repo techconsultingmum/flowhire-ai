@@ -13,7 +13,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { JobFormDialog } from "@/components/jobs/JobFormDialog";
 import { JobAssignmentsDialog } from "@/components/jobs/JobAssignmentsDialog";
-import { Briefcase, MapPin, Users, Search, Filter, UserPlus } from "lucide-react";
+import { Briefcase, MapPin, Users, Search, Filter, UserPlus, Edit } from "lucide-react";
 import { useSearch } from "@/hooks/use-search";
 import { useJobs } from "@/hooks/use-jobs";
 import { useApplications } from "@/hooks/use-applications";
