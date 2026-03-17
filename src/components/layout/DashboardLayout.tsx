@@ -1,5 +1,5 @@
 import { Sidebar } from "./Sidebar";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, useEffect, useCallback } from "react";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,31 @@ interface DashboardLayoutProps {
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
+  // Close mobile menu on Escape key
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileMenuOpen(false);
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [mobileMenuOpen]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileMenuOpen]);
+
+  const handleCollapsedChange = useCallback((collapsed: boolean) => {
+    setSidebarCollapsed(collapsed);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -28,6 +53,8 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           size="icon"
           className="text-sidebar-foreground"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={mobileMenuOpen}
         >
           <Menu className="w-6 h-6" />
         </Button>
@@ -44,6 +71,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div
           className="lg:hidden fixed inset-0 z-40 bg-background/80 backdrop-blur-sm"
           onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
         />
       )}
 
@@ -54,14 +82,20 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
-        <Sidebar onNavigate={() => setMobileMenuOpen(false)} />
+        <Sidebar
+          onNavigate={() => setMobileMenuOpen(false)}
+          onCollapsedChange={handleCollapsedChange}
+        />
       </div>
 
-      {/* Main Content */}
+      {/* Main Content — margin adjusts to sidebar width */}
       <main 
         id="main-content"
         role="main"
-        className="lg:ml-64 min-h-screen transition-all duration-300 pt-16 lg:pt-0"
+        className={cn(
+          "min-h-screen transition-all duration-300 pt-16 lg:pt-0",
+          sidebarCollapsed ? "lg:ml-20" : "lg:ml-64"
+        )}
       >
         <div className="p-4 lg:p-8">{children}</div>
       </main>
