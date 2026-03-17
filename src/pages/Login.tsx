@@ -1,6 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, User, Loader2 } from "lucide-react";
@@ -8,8 +13,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { usePageTitle } from "@/hooks/use-page-title";
 import { toast } from "sonner";
 import { z } from "zod";
- import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
- import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
+import { PasswordStrengthIndicator } from "@/components/auth/PasswordStrengthIndicator";
+import { ForgotPasswordDialog } from "@/components/auth/ForgotPasswordDialog";
 
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
