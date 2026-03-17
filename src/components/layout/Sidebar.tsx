@@ -19,7 +19,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
@@ -36,12 +36,18 @@ const navigation = [
 
 interface SidebarProps {
   onNavigate?: () => void;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }
 
-export function Sidebar({ onNavigate }: SidebarProps) {
+export function Sidebar({ onNavigate, onCollapsedChange }: SidebarProps) {
   const location = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const { profile, role, signOut } = useAuth();
+
+  // Notify parent of collapsed state changes
+  useEffect(() => {
+    onCollapsedChange?.(collapsed);
+  }, [collapsed, onCollapsedChange]);
 
   const handleNavClick = () => {
     if (onNavigate) {
@@ -104,7 +110,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto" aria-label="Sidebar navigation">
           {navigation
             .filter((item) => !item.adminOnly || role === "admin")
             .map((item) => {
@@ -115,6 +121,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                     <Link
                       to={item.href}
                       onClick={handleNavClick}
+                      aria-current={isActive ? "page" : undefined}
                       className={cn(
                         "flex items-center justify-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                         isActive
@@ -134,6 +141,7 @@ export function Sidebar({ onNavigate }: SidebarProps) {
                   key={item.name}
                   to={item.href}
                   onClick={handleNavClick}
+                  aria-current={isActive ? "page" : undefined}
                   className={cn(
                     "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200",
                     isActive

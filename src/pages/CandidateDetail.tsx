@@ -142,7 +142,7 @@ export default function CandidateDetail() {
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/candidates")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)} aria-label="Go back">
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
