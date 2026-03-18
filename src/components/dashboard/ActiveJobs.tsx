@@ -56,10 +56,11 @@ export function ActiveJobs() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {activeJobs.length > 0 ? (
           activeJobs.map((job) => (
-            <div
-              key={job.id}
-              className="p-4 rounded-xl border border-border hover:border-primary/30 transition-colors cursor-pointer hover-lift"
-            >
+              <Link
+                key={job.id}
+                to="/jobs"
+                className="block p-4 rounded-xl border border-border hover:border-primary/30 transition-colors cursor-pointer hover-lift"
+              >
               <div className="flex items-start justify-between mb-3">
                 <div>
                   <h4 className="font-semibold">{job.title}</h4>
