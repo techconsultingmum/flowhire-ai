@@ -84,7 +84,7 @@ export function ActiveJobs() {
                 </span>
                 <span className="text-muted-foreground">{job.daysOpen} days open</span>
               </div>
-            </div>
+              </Link>
           ))
         ) : (
           <p className="col-span-4 text-sm text-muted-foreground text-center py-4">

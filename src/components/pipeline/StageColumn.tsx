@@ -39,9 +39,6 @@ export function StageColumn({
             {applications.length}
           </span>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <MoreVertical className="w-4 h-4" />
-        </Button>
       </div>
 
       {/* Candidates */}
