@@ -56,7 +56,7 @@ export default function CandidateDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { candidates, isLoading: candidatesLoading, deleteCandidate } = useCandidates();
-  const { applications, isLoading: applicationsLoading } = useApplications();
+  const { applications, isLoading: applicationsLoading, deleteApplication } = useApplications();
   const { jobs } = useJobs();
   const { getResumeUrl, isLoading: resumeLoading } = useResumeUrl();
   const [isDeleting, setIsDeleting] = useState(false);
