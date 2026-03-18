@@ -56,7 +56,7 @@ export default function CandidateDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { candidates, isLoading: candidatesLoading, deleteCandidate } = useCandidates();
-  const { applications, isLoading: applicationsLoading } = useApplications();
+  const { applications, isLoading: applicationsLoading, deleteApplication } = useApplications();
   const { jobs } = useJobs();
   const { getResumeUrl, isLoading: resumeLoading } = useResumeUrl();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -314,9 +314,35 @@ export default function CandidateDetail() {
                                 </div>
                               )}
                             </div>
-                            <Badge className={stageColors[application.stage] || stageColors.applied}>
-                              {application.stage}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                              <Badge className={stageColors[application.stage] || stageColors.applied}>
+                                {application.stage}
+                              </Badge>
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                  </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                    <AlertDialogTitle>Remove Application</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                      Remove this application for {job?.title || "this job"}? This cannot be undone.
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                      onClick={() => deleteApplication.mutate(application.id)}
+                                    >
+                                      Remove
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+                            </div>
                           </div>
                           <Separator />
                           <div className="flex items-center gap-2 text-xs text-muted-foreground">

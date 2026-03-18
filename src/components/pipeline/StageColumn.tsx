@@ -3,8 +3,6 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Button } from "@/components/ui/button";
-import { MoreVertical } from "lucide-react";
 import { CandidateCard } from "./CandidateCard";
 import { ApplicationFormDialog } from "./ApplicationFormDialog";
 import { ApplicationWithDetails } from "@/hooks/use-applications";
@@ -41,9 +39,6 @@ export function StageColumn({
             {applications.length}
           </span>
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8">
-          <MoreVertical className="w-4 h-4" />
-        </Button>
       </div>
 
       {/* Candidates */}
