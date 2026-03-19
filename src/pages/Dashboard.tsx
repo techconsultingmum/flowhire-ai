@@ -14,9 +14,9 @@ import { useMemo } from "react";
 import { differenceInDays } from "date-fns";
 
 export default function Dashboard() {
-  const { candidates, isLoading: candidatesLoading } = useCandidates();
-  const { jobs, isLoading: jobsLoading } = useJobs();
-  const { applications, isLoading: applicationsLoading } = useApplications();
+  const { candidates, isLoading: candidatesLoading, error: candidatesError } = useCandidates();
+  const { jobs, isLoading: jobsLoading, error: jobsError } = useJobs();
+  const { applications, isLoading: applicationsLoading, error: applicationsError } = useApplications();
   const { profile } = useAuth();
   usePageTitle("Dashboard");
 
