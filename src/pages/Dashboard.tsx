@@ -4,6 +4,7 @@ import { RecentCandidates } from "@/components/dashboard/RecentCandidates";
 import { HiringFunnel } from "@/components/dashboard/HiringFunnel";
 import { ActiveJobs } from "@/components/dashboard/ActiveJobs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Users, Briefcase, Clock, TrendingUp } from "lucide-react";
 import { useCandidates } from "@/hooks/use-candidates";
 import { useJobs } from "@/hooks/use-jobs";
@@ -14,9 +15,9 @@ import { useMemo } from "react";
 import { differenceInDays } from "date-fns";
 
 export default function Dashboard() {
-  const { candidates, isLoading: candidatesLoading } = useCandidates();
-  const { jobs, isLoading: jobsLoading } = useJobs();
-  const { applications, isLoading: applicationsLoading } = useApplications();
+  const { candidates, isLoading: candidatesLoading, error: candidatesError } = useCandidates();
+  const { jobs, isLoading: jobsLoading, error: jobsError } = useJobs();
+  const { applications, isLoading: applicationsLoading, error: applicationsError } = useApplications();
   const { profile } = useAuth();
   usePageTitle("Dashboard");
 
@@ -51,6 +52,8 @@ export default function Dashboard() {
     };
   }, [candidates, jobs, applications]);
 
+  const hasError = !!candidatesError || !!jobsError || !!applicationsError;
+
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -64,6 +67,20 @@ export default function Dashboard() {
               <Skeleton key={i} className="h-32 w-full" />
             ))}
           </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <p className="text-lg font-semibold text-destructive mb-2">Something went wrong</p>
+          <p className="text-muted-foreground mb-4">We couldn't load your dashboard data. Please try refreshing the page.</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Refresh Page
+          </Button>
         </div>
       </DashboardLayout>
     );

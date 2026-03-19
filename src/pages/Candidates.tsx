@@ -19,7 +19,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CandidateFormDialog } from "@/components/candidates/CandidateFormDialog";
 import { AIScoringButton } from "@/components/candidates/AIScoringButton";
-import { Search, Filter, Mail, Phone, FileText, Star, Users, ChevronLeft, ChevronRight, Eye, Loader2 } from "lucide-react";
+import { Search, Mail, Phone, FileText, Star, Users, ChevronLeft, ChevronRight, Eye, Loader2 } from "lucide-react";
 import { useSearch } from "@/hooks/use-search";
 import { usePagination } from "@/hooks/use-pagination";
 import { useCandidates, Candidate } from "@/hooks/use-candidates";
