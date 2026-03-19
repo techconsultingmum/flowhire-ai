@@ -71,6 +71,20 @@ export default function Dashboard() {
     );
   }
 
+  if (hasError) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <p className="text-lg font-semibold text-destructive mb-2">Something went wrong</p>
+          <p className="text-muted-foreground mb-4">We couldn't load your dashboard data. Please try refreshing the page.</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Refresh Page
+          </Button>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
