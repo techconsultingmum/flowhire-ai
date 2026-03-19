@@ -51,7 +51,7 @@ export default function Dashboard() {
     };
   }, [candidates, jobs, applications]);
 
-  const hasError = !!useCandidatesResult?.error || !!useJobsResult?.error || !!useApplicationsResult?.error;
+  const hasError = !!candidatesError || !!jobsError || !!applicationsError;
 
   if (isLoading) {
     return (
