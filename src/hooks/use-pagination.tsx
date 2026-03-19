@@ -20,10 +20,8 @@ export function usePagination({
 
   // Reset to page 1 when total items changes (e.g. filter/search)
   useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(1);
-    }
-  }, [totalPages, currentPage]);
+    setCurrentPage(1);
+  }, [totalItems]);
 
   const startIndex = useMemo(
     () => (currentPage - 1) * itemsPerPage,

@@ -7,13 +7,36 @@ import { Footer } from "@/components/landing/Footer";
 
 export default function Landing() {
   useEffect(() => {
-    // Set page title and meta description for SEO
     document.title = "Hireflow - AI-Powered Recruiting Platform | Hire Smarter, Not Harder";
+    
+    // Set meta description
+    let metaDesc = document.querySelector('meta[name="description"]');
+    if (!metaDesc) {
+      metaDesc = document.createElement("meta");
+      metaDesc.setAttribute("name", "description");
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.setAttribute("content", "Streamline your hiring process with Hireflow. AI-powered candidate scoring, pipeline management, and team collaboration tools for modern recruiting teams.");
+
+    // Set OG tags
+    const ogTags: Record<string, string> = {
+      "og:title": "Hireflow - AI-Powered Recruiting Platform",
+      "og:description": "Hire smarter with AI-powered candidate scoring, drag-and-drop pipelines, and seamless team collaboration.",
+      "og:type": "website",
+    };
+    Object.entries(ogTags).forEach(([property, content]) => {
+      let tag = document.querySelector(`meta[property="${property}"]`);
+      if (!tag) {
+        tag = document.createElement("meta");
+        tag.setAttribute("property", property);
+        document.head.appendChild(tag);
+      }
+      tag.setAttribute("content", content);
+    });
   }, []);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Skip to main content for accessibility */}
       <a 
         href="#main-content" 
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg"

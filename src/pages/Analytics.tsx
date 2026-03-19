@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Users, Clock, TrendingUp, Target, Briefcase } from "lucide-react";
+import { Users, Clock, TrendingUp, Briefcase } from "lucide-react";
 import { useCandidates } from "@/hooks/use-candidates";
 import { useJobs } from "@/hooks/use-jobs";
 import { useApplications, PIPELINE_STAGES } from "@/hooks/use-applications";
