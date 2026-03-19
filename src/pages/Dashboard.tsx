@@ -4,6 +4,7 @@ import { RecentCandidates } from "@/components/dashboard/RecentCandidates";
 import { HiringFunnel } from "@/components/dashboard/HiringFunnel";
 import { ActiveJobs } from "@/components/dashboard/ActiveJobs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Users, Briefcase, Clock, TrendingUp } from "lucide-react";
 import { useCandidates } from "@/hooks/use-candidates";
 import { useJobs } from "@/hooks/use-jobs";
