@@ -51,6 +51,8 @@ export default function Dashboard() {
     };
   }, [candidates, jobs, applications]);
 
+  const hasError = !!useCandidatesResult?.error || !!useJobsResult?.error || !!useApplicationsResult?.error;
+
   if (isLoading) {
     return (
       <DashboardLayout>
