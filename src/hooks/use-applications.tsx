@@ -56,10 +56,11 @@ export function useApplications(jobId?: string) {
     },
   });
 
-  // Real-time subscription
+  // Real-time subscription with unique channel name per hook instance
   useEffect(() => {
+    const channelName = jobId ? `applications-changes-${jobId}` : "applications-changes-all";
     const channel = supabase
-      .channel("applications-changes")
+      .channel(channelName)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "applications" },
@@ -72,7 +73,7 @@ export function useApplications(jobId?: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, jobId]);
 
   const createApplication = useMutation({
     mutationFn: async (application: ApplicationInsert) => {

@@ -38,7 +38,6 @@ import {
   Clock,
   Trash2,
   Loader2,
-  Download,
   ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";

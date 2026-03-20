@@ -127,18 +127,24 @@ export function AIScoringButton({ candidateId, variant = "default", size = "defa
         <div className="space-y-6 py-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Select Job Position</label>
-            <Select value={selectedJobId} onValueChange={setSelectedJobId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a job to compare against" />
-              </SelectTrigger>
-              <SelectContent>
-                {activeJobs.map((job) => (
-                  <SelectItem key={job.id} value={job.id}>
-                    {job.title} - {job.department}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {activeJobs.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-2">
+                No active jobs available. Create an active job first to use AI scoring.
+              </p>
+            ) : (
+              <Select value={selectedJobId} onValueChange={setSelectedJobId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a job to compare against" />
+                </SelectTrigger>
+                <SelectContent>
+                  {activeJobs.map((job) => (
+                    <SelectItem key={job.id} value={job.id}>
+                      {job.title} - {job.department}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
 
           {score !== null && (

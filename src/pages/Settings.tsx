@@ -106,6 +106,9 @@ export default function Settings() {
       setFirstName(trimmedFirstName);
       setLastName(trimmedLastName);
       
+      // Sync updated profile back to auth context so sidebar/header reflects changes
+      await refreshProfile();
+      
       toast.success("Profile updated successfully");
     } catch (error) {
       toast.error("Failed to update profile");
