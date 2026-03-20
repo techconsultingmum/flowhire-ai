@@ -44,7 +44,7 @@ function loadNotificationPrefs() {
 }
 
 export default function Settings() {
-  const { profile, role, isLoading: authLoading } = useAuth();
+  const { profile, role, isLoading: authLoading, refreshProfile } = useAuth();
   usePageTitle("Settings");
   const [isSaving, setIsSaving] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
