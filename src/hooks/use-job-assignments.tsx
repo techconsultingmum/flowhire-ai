@@ -49,10 +49,11 @@ export function useJobAssignments(jobId?: string) {
     },
   });
 
-  // Real-time subscription
+  // Real-time subscription with unique channel name
   useEffect(() => {
+    const channelName = jobId ? `job-assignments-changes-${jobId}` : "job-assignments-changes-all";
     const channel = supabase
-      .channel("job-assignments-changes")
+      .channel(channelName)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "job_assignments" },
@@ -65,7 +66,7 @@ export function useJobAssignments(jobId?: string) {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, jobId]);
 
   const assignUserToJob = useMutation({
     mutationFn: async ({ userId, jobId }: { userId: string; jobId: string }) => {

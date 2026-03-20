@@ -44,7 +44,7 @@ function loadNotificationPrefs() {
 }
 
 export default function Settings() {
-  const { profile, role, isLoading: authLoading } = useAuth();
+  const { profile, role, isLoading: authLoading, refreshProfile } = useAuth();
   usePageTitle("Settings");
   const [isSaving, setIsSaving] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -105,6 +105,9 @@ export default function Settings() {
       
       setFirstName(trimmedFirstName);
       setLastName(trimmedLastName);
+      
+      // Sync updated profile back to auth context so sidebar/header reflects changes
+      await refreshProfile();
       
       toast.success("Profile updated successfully");
     } catch (error) {
