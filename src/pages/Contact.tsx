@@ -132,21 +132,24 @@ export default function Contact() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" name="firstName" required />
+                      <Input id="firstName" name="firstName" className={errors.firstName ? "border-destructive" : ""} />
+                      {errors.firstName && <p className="text-sm text-destructive">{errors.firstName}</p>}
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" name="lastName" required />
+                      <Input id="lastName" name="lastName" className={errors.lastName ? "border-destructive" : ""} />
+                      {errors.lastName && <p className="text-sm text-destructive">{errors.lastName}</p>}
                     </div>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" name="email" type="email" required />
+                    <Input id="email" name="email" type="email" className={errors.email ? "border-destructive" : ""} />
+                    {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -156,8 +159,8 @@ export default function Contact() {
 
                   <div className="space-y-2">
                     <Label htmlFor="subject">Subject</Label>
-                    <Select name="subject" required>
-                      <SelectTrigger>
+                    <Select value={subject} onValueChange={setSubject}>
+                      <SelectTrigger className={errors.subject ? "border-destructive" : ""}>
                         <SelectValue placeholder="Select a subject" />
                       </SelectTrigger>
                       <SelectContent>
@@ -168,6 +171,7 @@ export default function Contact() {
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.subject && <p className="text-sm text-destructive">{errors.subject}</p>}
                   </div>
 
                   <div className="space-y-2">
@@ -176,13 +180,19 @@ export default function Contact() {
                       id="message" 
                       name="message" 
                       rows={5} 
-                      required 
                       placeholder="Tell us how we can help..."
+                      className={errors.message ? "border-destructive" : ""}
                     />
+                    {errors.message && <p className="text-sm text-destructive">{errors.message}</p>}
                   </div>
 
                   <Button type="submit" className="w-full" disabled={isSubmitting}>
-                    {isSubmitting ? "Sending..." : "Send Message"}
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Sending...
+                      </>
+                    ) : "Send Message"}
                   </Button>
                 </form>
               </CardContent>
