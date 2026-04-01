@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Clock, Building } from "lucide-react";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 const openings = [
   {
