@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Search, MessageCircle, Mail, FileText } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 const faqs = [
   {
