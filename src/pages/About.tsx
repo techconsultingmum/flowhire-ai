@@ -2,6 +2,7 @@ import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Target, Heart, Zap } from "lucide-react";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 const values = [
   {
