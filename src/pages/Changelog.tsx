@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { Badge } from "@/components/ui/badge";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 const releases = [
   {
