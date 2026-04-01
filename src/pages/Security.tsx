@@ -3,6 +3,7 @@ import { Footer } from "@/components/landing/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Lock, Eye, Server, FileCheck, Users } from "lucide-react";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 const securityFeatures = [
   {
