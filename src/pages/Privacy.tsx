@@ -5,7 +5,6 @@ import { usePageTitle } from "@/hooks/use-page-title";
 export default function Privacy() {
   usePageTitle("Privacy Policy");
   return (
-  return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="pt-24 pb-16">
