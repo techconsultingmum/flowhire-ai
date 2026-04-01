@@ -7,21 +7,57 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Mail, MessageSquare, Phone } from "lucide-react";
+import { Mail, MessageSquare, Phone, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { usePageTitle } from "@/hooks/use-page-title";
+import { z } from "zod";
+
+const contactSchema = z.object({
+  firstName: z.string().trim().min(1, "First name is required").max(100),
+  lastName: z.string().trim().min(1, "Last name is required").max(100),
+  email: z.string().trim().email("Please enter a valid email address").max(255),
+  company: z.string().max(200).optional(),
+  subject: z.string().min(1, "Please select a subject"),
+  message: z.string().trim().min(10, "Message must be at least 10 characters").max(2000),
+});
 
 export default function Contact() {
+  usePageTitle("Contact");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [subject, setSubject] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setErrors({});
+    const formData = new FormData(e.currentTarget);
     
-    // Simulate form submission
+    const data = {
+      firstName: formData.get("firstName") as string,
+      lastName: formData.get("lastName") as string,
+      email: formData.get("email") as string,
+      company: formData.get("company") as string,
+      subject,
+      message: formData.get("message") as string,
+    };
+
+    const result = contactSchema.safeParse(data);
+    if (!result.success) {
+      const fieldErrors: Record<string, string> = {};
+      result.error.errors.forEach((err) => {
+        if (err.path[0]) fieldErrors[err.path[0] as string] = err.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setIsSubmitting(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     toast.success("Message sent! We'll get back to you soon.");
     setIsSubmitting(false);
+    setSubject("");
+    setErrors({});
     (e.target as HTMLFormElement).reset();
   };
 
