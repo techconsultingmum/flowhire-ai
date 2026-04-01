@@ -47,6 +47,7 @@ const certifications = [
 ];
 
 export default function Security() {
+  usePageTitle("Security");
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

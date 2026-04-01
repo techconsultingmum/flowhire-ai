@@ -46,6 +46,7 @@ const methodColors: Record<string, string> = {
 };
 
 export default function ApiReference() {
+  usePageTitle("API Reference");
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

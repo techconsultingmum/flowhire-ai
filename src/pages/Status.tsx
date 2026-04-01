@@ -42,6 +42,7 @@ const statusConfig = {
 };
 
 export default function Status() {
+  usePageTitle("System Status");
   const allOperational = services.every(s => s.status === "operational");
 
   return (
