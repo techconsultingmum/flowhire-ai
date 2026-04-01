@@ -41,6 +41,7 @@ interface SidebarProps {
 
 export function Sidebar({ onNavigate, onCollapsedChange }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const { profile, role, signOut } = useAuth();
 
