@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { BookOpen, Rocket, Settings, Users, Zap, Shield, Search } from "lucide-react";
 import { useState } from "react";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 const categories = [
   {
