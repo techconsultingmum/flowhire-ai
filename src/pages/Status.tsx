@@ -3,6 +3,7 @@ import { Footer } from "@/components/landing/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, AlertCircle, XCircle } from "lucide-react";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 const services = [
   { name: "Web Application", status: "operational", uptime: "99.99%" },
@@ -41,6 +42,7 @@ const statusConfig = {
 };
 
 export default function Status() {
+  usePageTitle("System Status");
   const allOperational = services.every(s => s.status === "operational");
 
   return (

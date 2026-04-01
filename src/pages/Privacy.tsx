@@ -1,7 +1,9 @@
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 export default function Privacy() {
+  usePageTitle("Privacy Policy");
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

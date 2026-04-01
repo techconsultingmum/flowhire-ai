@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 const endpoints = [
   {
@@ -45,6 +46,7 @@ const methodColors: Record<string, string> = {
 };
 
 export default function ApiReference() {
+  usePageTitle("API Reference");
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

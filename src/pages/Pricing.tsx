@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 import { Link } from "react-router-dom";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 const plans = [
   {
@@ -60,6 +61,7 @@ const plans = [
 ];
 
 export default function Pricing() {
+  usePageTitle("Pricing");
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

@@ -2,6 +2,7 @@ import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Target, Heart, Zap } from "lucide-react";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 const values = [
   {
@@ -34,6 +35,7 @@ const team = [
 ];
 
 export default function About() {
+  usePageTitle("About");
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

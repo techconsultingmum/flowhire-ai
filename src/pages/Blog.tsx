@@ -3,6 +3,7 @@ import { Footer } from "@/components/landing/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 const posts = [
   {
@@ -62,6 +63,7 @@ const posts = [
 ];
 
 export default function Blog() {
+  usePageTitle("Blog");
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

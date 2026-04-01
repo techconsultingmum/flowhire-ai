@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   Briefcase,
@@ -41,6 +41,7 @@ interface SidebarProps {
 
 export function Sidebar({ onNavigate, onCollapsedChange }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const { profile, role, signOut } = useAuth();
 
@@ -58,6 +59,7 @@ export function Sidebar({ onNavigate, onCollapsedChange }: SidebarProps) {
   const handleSignOut = async () => {
     await signOut();
     toast.success("Signed out successfully");
+    navigate("/", { replace: true });
   };
 
   const displayName = profile?.first_name && profile?.last_name
