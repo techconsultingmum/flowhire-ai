@@ -59,6 +59,7 @@ export function Sidebar({ onNavigate, onCollapsedChange }: SidebarProps) {
   const handleSignOut = async () => {
     await signOut();
     toast.success("Signed out successfully");
+    navigate("/", { replace: true });
   };
 
   const displayName = profile?.first_name && profile?.last_name
