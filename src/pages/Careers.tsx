@@ -61,6 +61,7 @@ const perks = [
 ];
 
 export default function Careers() {
+  usePageTitle("Careers");
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

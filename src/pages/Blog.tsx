@@ -63,6 +63,7 @@ const posts = [
 ];
 
 export default function Blog() {
+  usePageTitle("Blog");
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

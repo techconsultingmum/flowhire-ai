@@ -46,6 +46,7 @@ const categories = [
 ];
 
 export default function Documentation() {
+  usePageTitle("Documentation");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredCategories = categories.filter(category => 

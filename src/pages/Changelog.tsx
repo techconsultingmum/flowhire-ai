@@ -67,6 +67,7 @@ const releases = [
 ];
 
 export default function Changelog() {
+  usePageTitle("Changelog");
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

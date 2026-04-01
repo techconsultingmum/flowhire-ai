@@ -61,6 +61,7 @@ const plans = [
 ];
 
 export default function Pricing() {
+  usePageTitle("Pricing");
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

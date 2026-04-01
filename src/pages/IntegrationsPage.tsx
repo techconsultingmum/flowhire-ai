@@ -46,6 +46,7 @@ const integrations = [
 ];
 
 export default function IntegrationsPage() {
+  usePageTitle("Integrations");
   return (
     <div className="min-h-screen bg-background">
       <Navbar />

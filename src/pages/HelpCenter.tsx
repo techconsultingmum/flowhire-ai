@@ -45,6 +45,7 @@ const faqs = [
 ];
 
 export default function HelpCenter() {
+  usePageTitle("Help Center");
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredFaqs = faqs.filter(faq =>
