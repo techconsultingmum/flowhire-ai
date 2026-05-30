@@ -1,10 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { Home, ArrowLeft, Search } from "lucide-react";
+import { Home, ArrowLeft } from "lucide-react";
 
 const NotFound = () => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.error("404 Error: User attempted to access non-existent route:", location.pathname);
@@ -43,11 +44,14 @@ const NotFound = () => {
               Go Home
             </Button>
           </Link>
-          <Button 
-            variant="outline" 
-            size="lg" 
-            className="gap-2 w-full sm:w-auto" 
-            onClick={() => window.history.back()}
+          <Button
+            variant="outline"
+            size="lg"
+            className="gap-2 w-full sm:w-auto"
+            onClick={() => {
+              if (window.history.length > 1) navigate(-1);
+              else navigate("/");
+            }}
           >
             <ArrowLeft className="w-4 h-4" aria-hidden="true" />
             Go Back
