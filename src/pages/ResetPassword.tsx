@@ -41,7 +41,7 @@ export default function ResetPassword() {
     if (hash.includes("type=recovery")) setIsRecovery(true);
 
     supabase.auth.getSession().then(({ data }) => {
-      setIsRecovery((prev) => prev ?? !!data.session && hash.includes("type=recovery"));
+      setIsRecovery((prev) => prev ?? (!!data.session && hash.includes("type=recovery")));
     });
 
     return () => subscription.unsubscribe();
