@@ -239,9 +239,10 @@ Analyze the candidate's fit for this role and provide a score and reasoning.`;
       }
     );
   } catch (error) {
-    console.error("AI scoring error:", error);
+    // Log full error server-side only; return generic message to caller.
+    console.error("AI scoring internal error:", error);
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      JSON.stringify({ error: "An internal error occurred. Please try again later." }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },

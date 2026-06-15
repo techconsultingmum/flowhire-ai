@@ -94,9 +94,17 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
-      const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-      if (!allowedTypes.includes(file.type)) {
+      // Defense in depth: validate both MIME type and file extension.
+      // file.type is browser-supplied and can be spoofed, so we also enforce
+      // an extension allowlist and re-set contentType at upload time.
+      const allowedTypes = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ];
+      const allowedExts = ['pdf', 'doc', 'docx'];
+      const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+      if (!allowedTypes.includes(file.type) || !allowedExts.includes(ext)) {
         toast({
           title: "Invalid file type",
           description: "Please upload a PDF or Word document.",
@@ -127,14 +135,28 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
   };
 
   const uploadResume = async (file: File, candidateId: string): Promise<string> => {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${candidateId}/${Date.now()}.${fileExt}`;
-    
+    // Enforce extension allowlist at the upload boundary and explicitly set
+    // a safe contentType so the browser-supplied file.type cannot trick the
+    // bucket into storing executable/renderable content (e.g. SVG/HTML).
+    const rawExt = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const extToMime: Record<string, string> = {
+      pdf: 'application/pdf',
+      doc: 'application/msword',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    };
+    const safeContentType = extToMime[rawExt];
+    if (!safeContentType) {
+      throw new Error('Unsupported resume file type.');
+    }
+
+    const fileName = `${candidateId}/${Date.now()}.${rawExt}`;
+
     const { error: uploadError } = await supabase.storage
       .from('resumes')
       .upload(fileName, file, {
         cacheControl: '3600',
-        upsert: true
+        upsert: true,
+        contentType: safeContentType,
       });
 
     if (uploadError) {

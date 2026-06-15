@@ -94,8 +94,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (roleError) {
         console.error("Error fetching role:", roleError);
+        setRole(null);
       } else {
-        setRole(roleData?.role as AppRole ?? "recruiter");
+        // No silent fallback: if no role row exists, treat as no access.
+        setRole((roleData?.role as AppRole) ?? null);
       }
     } catch (error) {
       console.error("Error in fetchProfileAndRole:", error);
