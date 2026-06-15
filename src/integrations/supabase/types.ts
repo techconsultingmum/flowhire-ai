@@ -65,6 +65,39 @@ export type Database = {
           },
         ]
       }
+      auth_audit_log: {
+        Row: {
+          created_at: string
+          email: string | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       candidates: {
         Row: {
           ai_score: number | null
@@ -190,6 +223,27 @@ export type Database = {
           title?: string
           type?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      password_reset_attempts: {
+        Row: {
+          created_at: string
+          email_hash: string
+          id: string
+          ip_address: string | null
+        }
+        Insert: {
+          created_at?: string
+          email_hash: string
+          id?: string
+          ip_address?: string | null
+        }
+        Update: {
+          created_at?: string
+          email_hash?: string
+          id?: string
+          ip_address?: string | null
         }
         Relationships: []
       }

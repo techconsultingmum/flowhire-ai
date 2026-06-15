@@ -37,18 +37,40 @@
      setIsLoading(true);
  
      try {
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(
-          email,
-          { redirectTo: `${window.location.origin}/reset-password` }
+        // Route through the throttled edge function. It always returns a
+        // generic success message to prevent account enumeration; only
+        // hard validation / rate-limit errors are surfaced inline.
+        const { data, error: fnError } = await supabase.functions.invoke(
+          "request-password-reset",
+          {
+            body: {
+              email,
+              redirectTo: `${window.location.origin}/reset-password`,
+            },
+          },
         );
- 
-       if (resetError) {
-         toast.error(resetError.message);
-         setError(resetError.message);
-       } else {
-         setSent(true);
-         toast.success("Password reset email sent!");
-       }
+
+        if (fnError) {
+          // Edge functions return non-2xx as an FunctionsHttpError; surface
+          // the server-provided message when available, otherwise generic.
+          const context = (fnError as { context?: Response }).context;
+          let serverMessage: string | undefined;
+          if (context) {
+            try {
+              const body = await context.clone().json();
+              serverMessage = body?.error;
+            } catch {
+              /* ignore */
+            }
+          }
+          const message =
+            serverMessage ?? "We couldn't process that request. Please try again shortly.";
+          toast.error(message);
+          setError(message);
+        } else {
+          setSent(true);
+          toast.success(data?.message ?? "If an account exists for that email, a reset link is on its way.");
+        }
      } catch (err) {
        toast.error("An unexpected error occurred");
      } finally {
