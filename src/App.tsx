@@ -18,6 +18,7 @@ import Integrations from "./pages/Integrations";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 // Public pages
@@ -59,6 +60,7 @@ const App = () => (
               {/* Public landing pages */}
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/pricing" element={<Pricing />} />
               <Route path="/about" element={<About />} />
               <Route path="/integrations-overview" element={<IntegrationsPage />} />
