@@ -159,10 +159,13 @@ export default function ResetPassword() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-background">
+    <div
+      className="min-h-screen flex items-center justify-center p-6 bg-background"
+      data-testid="reset-form"
+    >
       <div className="max-w-md w-full bg-card border border-border rounded-xl p-8 shadow-sm">
         {done ? (
-          <div className="flex flex-col items-center text-center space-y-4">
+          <div className="flex flex-col items-center text-center space-y-4" data-testid="reset-success">
             <div className="w-16 h-16 rounded-full bg-success/10 flex items-center justify-center">
               <CheckCircle2 className="w-8 h-8 text-success" />
             </div>
@@ -200,7 +203,11 @@ export default function ResetPassword() {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                {errors.password && <p className="text-sm text-destructive">{errors.password}</p>}
+                {(errors.password || passwordIssue) && (
+                  <p className="text-sm text-destructive" role="alert">
+                    {errors.password ?? passwordIssue}
+                  </p>
+                )}
                 {password && <PasswordStrengthIndicator password={password} />}
               </div>
 
@@ -218,10 +225,14 @@ export default function ResetPassword() {
                     disabled={isLoading}
                   />
                 </div>
-                {errors.confirm && <p className="text-sm text-destructive">{errors.confirm}</p>}
+                {(errors.confirm || confirmIssue) && (
+                  <p className="text-sm text-destructive" role="alert">
+                    {errors.confirm ?? confirmIssue}
+                  </p>
+                )}
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button type="submit" className="w-full" disabled={!canSubmit}>
                 {isLoading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin mr-2" />
