@@ -24,7 +24,15 @@ import {
 import { useCandidates, Candidate } from "@/hooks/use-candidates";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Loader2, Edit, Upload, FileText, X } from "lucide-react";
+import { Plus, Loader2, Edit, Upload, FileText, X, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useResumeUploadEligibility } from "@/hooks/use-resume-upload-eligibility";
+import {
+  RESUME_UPLOAD_ERROR,
+  describeResumeUploadError,
+  type ResumeUploadErrorCode,
+  type ResumeUploadResult,
+} from "@/lib/resume-upload-errors";
 
 const candidateSchema = z.object({
   first_name: z.string().min(1, "First name is required").max(50, "First name must be less than 50 characters"),
@@ -47,10 +55,12 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [existingResumeUrl, setExistingResumeUrl] = useState<string | null>(null);
+  const [uploadErrorCode, setUploadErrorCode] = useState<ResumeUploadErrorCode | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { createCandidate, updateCandidate } = useCandidates();
   const { toast } = useToast();
   const isEditing = !!candidate;
+  const eligibility = useResumeUploadEligibility();
 
   const form = useForm<CandidateFormValues>({
     resolver: zodResolver(candidateSchema),
@@ -129,47 +139,40 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
   const removeResume = () => {
     setResumeFile(null);
     setExistingResumeUrl(null);
+    setUploadErrorCode(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
   const uploadResume = async (file: File, candidateId: string): Promise<string> => {
-    // Enforce extension allowlist at the upload boundary and explicitly set
-    // a safe contentType so the browser-supplied file.type cannot trick the
-    // bucket into storing executable/renderable content (e.g. SVG/HTML).
-    const rawExt = file.name.split('.').pop()?.toLowerCase() ?? '';
-    const extToMime: Record<string, string> = {
-      pdf: 'application/pdf',
-      doc: 'application/msword',
-      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    };
-    const safeContentType = extToMime[rawExt];
-    if (!safeContentType) {
-      throw new Error('Unsupported resume file type.');
+    // Server-side enforcement: the upload-resume edge function validates role,
+    // job assignment, candidate access, file size and type, and writes audit
+    // events. The frontend trusts its structured error codes (see
+    // src/lib/resume-upload-errors.ts).
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("candidateId", candidateId);
+
+    const { data, error } = await supabase.functions.invoke<ResumeUploadResult>(
+      "upload-resume",
+      { body: fd },
+    );
+
+    if (error || !data) {
+      throw new Error(error?.message ?? "Resume upload failed.");
     }
-
-    const fileName = `${candidateId}/${Date.now()}.${rawExt}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('resumes')
-      .upload(fileName, file, {
-        cacheControl: '3600',
-        upsert: true,
-        contentType: safeContentType,
-      });
-
-    if (uploadError) {
-      throw uploadError;
+    if (!data.ok) {
+      const err = new Error(data.message) as Error & { code?: ResumeUploadErrorCode };
+      err.code = data.code;
+      throw err;
     }
-
-    // Store the file path, not a signed URL - signed URLs expire
-    // The useResumeUrl hook generates fresh signed URLs on demand
-    return fileName;
+    return data.path;
   };
 
   const onSubmit = async (values: CandidateFormValues) => {
     setIsUploading(true);
+    setUploadErrorCode(null);
     
     try {
       const skills = values.skills
@@ -223,11 +226,18 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
       setOpen(false);
     } catch (error) {
       console.error("Error saving candidate:", error);
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save candidate",
-        variant: "destructive",
-      });
+      const code = (error as { code?: ResumeUploadErrorCode }).code;
+      if (code) {
+        setUploadErrorCode(code);
+        const desc = describeResumeUploadError(code);
+        toast({ title: desc.title, description: desc.description, variant: "destructive" });
+      } else {
+        toast({
+          title: "Error",
+          description: error instanceof Error ? error.message : "Failed to save candidate",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsUploading(false);
     }
