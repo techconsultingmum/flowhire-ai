@@ -162,7 +162,7 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
     if (error || !data) {
       throw new Error(error?.message ?? "Resume upload failed.");
     }
-    if (!data.ok) {
+    if (data.ok === false) {
       const err = new Error(data.message) as Error & { code?: ResumeUploadErrorCode };
       err.code = data.code;
       throw err;
