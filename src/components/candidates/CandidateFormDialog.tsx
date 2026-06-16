@@ -372,12 +372,35 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
             {/* Resume Upload */}
             <div className="space-y-2">
               <FormLabel>Resume</FormLabel>
+              {(() => {
+                const blockedCode = uploadErrorCode ?? eligibility.blockedCode;
+                if (!blockedCode) return null;
+                const desc = describeResumeUploadError(blockedCode);
+                return (
+                  <Alert variant="destructive" role="alert" data-testid="resume-upload-blocked">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>{desc.title}</AlertTitle>
+                    <AlertDescription className="space-y-2">
+                      <p>{desc.description}</p>
+                      {desc.cta && (
+                        <a
+                          href={desc.cta.href}
+                          className="inline-block text-sm font-medium underline underline-offset-4"
+                        >
+                          {desc.cta.label} →
+                        </a>
+                      )}
+                    </AlertDescription>
+                  </Alert>
+                );
+              })()}
               <input
                 ref={fileInputRef}
                 type="file"
                 accept=".pdf,.doc,.docx"
                 onChange={handleFileSelect}
                 className="hidden"
+                disabled={!eligibility.canUpload}
               />
               
               {resumeFile || existingResumeUrl ? (
@@ -402,6 +425,8 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
                   variant="outline"
                   className="w-full h-20 border-dashed gap-2"
                   onClick={() => fileInputRef.current?.click()}
+                  disabled={!eligibility.canUpload}
+                  aria-disabled={!eligibility.canUpload}
                 >
                   <Upload className="w-5 h-5" />
                   <div className="text-left">
