@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.log-password-reset]
 verify_jwt = false
+
+[functions.upload-resume]
+verify_jwt = false
