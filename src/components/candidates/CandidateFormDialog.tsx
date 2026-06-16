@@ -150,24 +150,50 @@ export function CandidateFormDialog({ trigger, candidate }: CandidateFormDialogP
     // job assignment, candidate access, file size and type, and writes audit
     // events. The frontend trusts its structured error codes (see
     // src/lib/resume-upload-errors.ts).
+    //
+    // We call the function via fetch directly (rather than supabase.functions
+    // .invoke) so we can read the structured JSON body on non-2xx responses —
+    // invoke turns those into FunctionsHttpError and drops the body.
     const fd = new FormData();
     fd.append("file", file);
     fd.append("candidateId", candidateId);
 
-    const { data, error } = await supabase.functions.invoke<ResumeUploadResult>(
-      "upload-resume",
-      { body: fd },
-    );
-
-    if (error || !data) {
-      throw new Error(error?.message ?? "Resume upload failed.");
-    }
-    if (data.ok === false) {
-      const err = new Error(data.message) as Error & { code?: ResumeUploadErrorCode };
-      err.code = data.code;
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    if (!token) {
+      const err = new Error("Sign in to upload resumes.") as Error & { code?: ResumeUploadErrorCode };
+      err.code = RESUME_UPLOAD_ERROR.UNAUTHENTICATED;
       throw err;
     }
-    return data.path;
+
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/upload-resume`;
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      },
+      body: fd,
+    });
+
+    let parsed: ResumeUploadResult | null = null;
+    try {
+      parsed = (await res.json()) as ResumeUploadResult;
+    } catch {
+      parsed = null;
+    }
+
+    if (!parsed) {
+      const err = new Error("Resume upload failed.") as Error & { code?: ResumeUploadErrorCode };
+      err.code = RESUME_UPLOAD_ERROR.UPLOAD_FAILED;
+      throw err;
+    }
+    if (parsed.ok === false) {
+      const err = new Error(parsed.message) as Error & { code?: ResumeUploadErrorCode };
+      err.code = parsed.code;
+      throw err;
+    }
+    return parsed.path;
   };
 
   const onSubmit = async (values: CandidateFormValues) => {
